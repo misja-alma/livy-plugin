@@ -1,19 +1,36 @@
 <idea-plugin>
-    <id>org.jetbrains.plugins.template</id>
-    <name>Template</name>
-    <vendor>JetBrains</vendor>
+    <id>org.tera.plugins.Livy</id>
+    <name>Livy</name>
+    <vendor>Teralytics</vendor>
 
     <!-- Product and plugin compatibility requirements -->
     <!-- https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <applicationService serviceImplementation="org.jetbrains.plugins.template.services.MyApplicationService"/>
-        <projectService serviceImplementation="org.jetbrains.plugins.template.services.MyProjectService"/>
+        <applicationService serviceImplementation="org.tera.plugins.livy.services.MyApplicationService"/>
+        <projectService serviceImplementation="org.tera.plugins.livy.services.MyProjectService"/>
+        <toolWindow id="LivyToolWindow"
+                    anchor="bottom"
+                    icon="AllIcons.Actions.ArrowExpand"
+                    secondary="false"
+                    factoryClass="com.intellij.execution.services.ServiceViewToolWindowFactory"/>
+        <configurationType implementation="org.tera.plugins.livy.run.LivyConfigurationType"/>
+        <runConfigurationProducer implementation="org.tera.plugins.livy.run.LivyRunConfigurationProducer"/>
     </extensions>
 
     <applicationListeners>
-        <listener class="org.jetbrains.plugins.template.listeners.MyProjectManagerListener"
+        <listener class="org.tera.plugins.livy.listeners.MyProjectManagerListener"
                   topic="com.intellij.openapi.project.ProjectManagerListener"/>
     </applicationListeners>
+
+    <actions>
+        <action
+                id="LivyRunSelectedCodeAction"
+                class="org.tera.plugins.livy.actions.RunSelectedCodeAction"
+                text="Run Selection On Livy"
+                description="Run selection on Livy">
+            <add-to-group group-id="BasicEditorPopupMenu" anchor="last"/>
+        </action>
+    </actions>
 </idea-plugin>

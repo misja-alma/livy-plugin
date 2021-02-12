@@ -43,6 +43,9 @@ repositories {
 }
 dependencies {
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.15.0")
+
+    implementation("org.json", "json", "20201115")
+    implementation("com.squareup.okhttp3", "okhttp","4.8.0")
 }
 
 // Configure gradle-intellij-plugin plugin.

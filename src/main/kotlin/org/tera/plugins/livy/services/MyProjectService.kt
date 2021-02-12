@@ -1,7 +1,7 @@
-package org.jetbrains.plugins.template.services
+package org.tera.plugins.livy.services
 
 import com.intellij.openapi.project.Project
-import org.jetbrains.plugins.template.MyBundle
+import org.tera.plugins.livy.MyBundle
 
 class MyProjectService(project: Project) {
 

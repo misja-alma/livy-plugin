@@ -1,6 +1,6 @@
-package org.jetbrains.plugins.template.services
+package org.tera.plugins.livy.services
 
-import org.jetbrains.plugins.template.MyBundle
+import org.tera.plugins.livy.MyBundle
 
 class MyApplicationService {
 

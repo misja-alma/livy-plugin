@@ -1,0 +1,291 @@
+{
+  "total_statements": 22,
+  "statements": [
+    {
+      "id": 0,
+      "code": "spark",
+      "state": "available",
+      "output": {
+        "status": "ok",
+        "execution_count": 0,
+        "data": {
+          "text/plain": "res0: org.apache.spark.sql.SparkSession = org.apache.spark.sql.SparkSession@6594116b\n"
+        }
+      },
+      "progress": 1.0
+    },
+    {
+      "id": 1,
+      "code": "println (\"test\")\n",
+      "state": "available",
+      "output": {
+        "status": "ok",
+        "execution_count": 1,
+        "data": {
+          "text/plain": "test\n"
+        }
+      },
+      "progress": 1.0
+    },
+    {
+      "id": 2,
+      "code": "1 + 1",
+      "state": "available",
+      "output": {
+        "status": "ok",
+        "execution_count": 2,
+        "data": {
+          "text/plain": "res2: Int = 2\n"
+        }
+      },
+      "progress": 1.0
+    },
+    {
+      "id": 3,
+      "code": "1 + 1",
+      "state": "available",
+      "output": {
+        "status": "ok",
+        "execution_count": 3,
+        "data": {
+          "text/plain": "res3: Int = 2\n"
+        }
+      },
+      "progress": 1.0
+    },
+    {
+      "id": 4,
+      "code": "println(\"hello world\")",
+      "state": "available",
+      "output": {
+        "status": "ok",
+        "execution_count": 4,
+        "data": {
+          "text/plain": "hello world\n"
+        }
+      },
+      "progress": 1.0
+    },
+    {
+      "id": 5,
+      "code": "println(\"hello world\")",
+      "state": "available",
+      "output": {
+        "status": "ok",
+        "execution_count": 5,
+        "data": {
+          "text/plain": "hello world\n"
+        }
+      },
+      "progress": 1.0
+    },
+    {
+      "id": 6,
+      "code": "println(\"Hello World!\")",
+      "state": "available",
+      "output": {
+        "status": "ok",
+        "execution_count": 6,
+        "data": {
+          "text/plain": "Hello World!\n"
+        }
+      },
+      "progress": 1.0
+    },
+    {
+      "id": 7,
+      "code": "println(\"Hello World!\")",
+      "state": "available",
+      "output": {
+        "status": "ok",
+        "execution_count": 7,
+        "data": {
+          "text/plain": "Hello World!\n"
+        }
+      },
+      "progress": 1.0
+    },
+    {
+      "id": 8,
+      "code": "println(\"Hello World!\")",
+      "state": "available",
+      "output": {
+        "status": "ok",
+        "execution_count": 8,
+        "data": {
+          "text/plain": "Hello World!\n"
+        }
+      },
+      "progress": 1.0
+    },
+    {
+      "id": 9,
+      "code": " println(\"Hello World!\")",
+      "state": "available",
+      "output": {
+        "status": "ok",
+        "execution_count": 9,
+        "data": {
+          "text/plain": "Hello World!\n"
+        }
+      },
+      "progress": 1.0
+    },
+    {
+      "id": 10,
+      "code": "println(\"Hello World!\")",
+      "state": "available",
+      "output": {
+        "status": "ok",
+        "execution_count": 10,
+        "data": {
+          "text/plain": "Hello World!\n"
+        }
+      },
+      "progress": 1.0
+    },
+    {
+      "id": 11,
+      "code": "1 + 1",
+      "state": "available",
+      "output": {
+        "status": "ok",
+        "execution_count": 11,
+        "data": {
+          "text/plain": "res11: Int = 2\n"
+        }
+      },
+      "progress": 1.0
+    },
+    {
+      "id": 12,
+      "code": "1 + 1",
+      "state": "available",
+      "output": {
+        "status": "ok",
+        "execution_count": 12,
+        "data": {
+          "text/plain": "res12: Int = 2\n"
+        }
+      },
+      "progress": 1.0
+    },
+    {
+      "id": 13,
+      "code": "1 + 1",
+      "state": "available",
+      "output": {
+        "status": "ok",
+        "execution_count": 13,
+        "data": {
+          "text/plain": "res13: Int = 2\n"
+        }
+      },
+      "progress": 1.0
+    },
+    {
+      "id": 14,
+      "code": "1 + 1",
+      "state": "available",
+      "output": {
+        "status": "ok",
+        "execution_count": 14,
+        "data": {
+          "text/plain": "res14: Int = 2\n"
+        }
+      },
+      "progress": 1.0
+    },
+    {
+      "id": 15,
+      "code": "1 + 1",
+      "state": "available",
+      "output": {
+        "status": "ok",
+        "execution_count": 15,
+        "data": {
+          "text/plain": "res15: Int = 2\n"
+        }
+      },
+      "progress": 1.0
+    },
+    {
+      "id": 16,
+      "code": "1 + 1",
+      "state": "available",
+      "output": {
+        "status": "ok",
+        "execution_count": 16,
+        "data": {
+          "text/plain": "res16: Int = 2\n"
+        }
+      },
+      "progress": 1.0
+    },
+    {
+      "id": 17,
+      "code": "1 + 1",
+      "state": "available",
+      "output": {
+        "status": "ok",
+        "execution_count": 17,
+        "data": {
+          "text/plain": "res17: Int = 2\n"
+        }
+      },
+      "progress": 1.0
+    },
+    {
+      "id": 18,
+      "code": "1 + 1",
+      "state": "available",
+      "output": {
+        "status": "ok",
+        "execution_count": 18,
+        "data": {
+          "text/plain": "res18: Int = 2\n"
+        }
+      },
+      "progress": 1.0
+    },
+    {
+      "id": 19,
+      "code": "1 + 1",
+      "state": "available",
+      "output": {
+        "status": "ok",
+        "execution_count": 19,
+        "data": {
+          "text/plain": "res19: Int = 2\n"
+        }
+      },
+      "progress": 1.0
+    },
+    {
+      "id": 20,
+      "code": "1 + 1",
+      "state": "available",
+      "output": {
+        "status": "ok",
+        "execution_count": 20,
+        "data": {
+          "text/plain": "res20: Int = 2\n"
+        }
+      },
+      "progress": 1.0
+    },
+    {
+      "id": 21,
+      "code": "1 + 1",
+      "state": "available",
+      "output": {
+        "status": "ok",
+        "execution_count": 21,
+        "data": {
+          "text/plain": "res21: Int = 2\n"
+        }
+      },
+      "progress": 1.0
+    }
+  ]
+}

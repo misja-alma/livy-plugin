@@ -1,0 +1,75 @@
+{
+  "id": 517,
+  "name": "malma_rest_test_11",
+  "appId": null,
+  "owner": null,
+  "proxyUser": null,
+  "state": "starting",
+  "kind": "spark",
+  "appInfo": {
+    "driverLogUrl": null,
+    "sparkUiUrl": null
+  },
+  "log": [
+    "\t volumes: spark-local-dir-1, ivy-settings-volume, hadoop-conf-dev-volume, livy-libs, nfs, spark-conf-volume, spark-token-67z56",
+    "\t node name: ckd02.ckd.dns.teralytics.net",
+    "\t start time: 2021-02-07T13:07:04Z",
+    "\t container images: nexus-docker.local/spark-aws:v2.4.5-20200326-20200526",
+    "\t phase: Pending",
+    "\t status: [ContainerStatus(containerID=null, image=nexus-docker.local/spark-aws:v2.4.5-20200326-20200526, imageID=, lastState=ContainerState(running=null, terminated=null, waiting=null, additionalProperties={}), name=spark-kubernetes-driver, ready=false, restartCount=0, state=ContainerState(running=null, terminated=null, waiting=ContainerStateWaiting(message=null, reason=ContainerCreating, additionalProperties={}), additionalProperties={}), additionalProperties={started=false})]",
+    "21/02/07 13:07:05 INFO Client: Deployed Spark application malma_rest_test_11 into Kubernetes.",
+    "21/02/07 13:07:05 INFO ShutdownHookManager: Shutdown hook called",
+    "21/02/07 13:07:05 INFO ShutdownHookManager: Deleting directory /tmp/spark-d2eef28e-fd9a-4efe-b153-168494b22cb9",
+    "\nKubernetes Diagnostics: "
+  ]
+},
+{
+  "id": 517,
+  "name": "malma_rest_test_11",
+  "appId": "spark-f7056e95ce984331a5ea2f9512e34034",
+  "owner": null,
+  "proxyUser": null,
+  "state": "starting",
+  "kind": "spark",
+  "appInfo": {
+    "driverLogUrl": null,
+    "sparkUiUrl": null
+  },
+  "log": [
+    "\t volumes: spark-local-dir-1, ivy-settings-volume, hadoop-conf-dev-volume, livy-libs, nfs, spark-conf-volume, spark-token-67z56",
+    "\t node name: ckd02.ckd.dns.teralytics.net",
+    "\t start time: 2021-02-07T13:07:04Z",
+    "\t container images: nexus-docker.local/spark-aws:v2.4.5-20200326-20200526",
+    "\t phase: Pending",
+    "\t status: [ContainerStatus(containerID=null, image=nexus-docker.local/spark-aws:v2.4.5-20200326-20200526, imageID=, lastState=ContainerState(running=null, terminated=null, waiting=null, additionalProperties={}), name=spark-kubernetes-driver, ready=false, restartCount=0, state=ContainerState(running=null, terminated=null, waiting=ContainerStateWaiting(message=null, reason=ContainerCreating, additionalProperties={}), additionalProperties={}), additionalProperties={started=false})]",
+    "21/02/07 13:07:05 INFO Client: Deployed Spark application malma_rest_test_11 into Kubernetes.",
+    "21/02/07 13:07:05 INFO ShutdownHookManager: Shutdown hook called",
+    "21/02/07 13:07:05 INFO ShutdownHookManager: Deleting directory /tmp/spark-d2eef28e-fd9a-4efe-b153-168494b22cb9",
+    "\nKubernetes Diagnostics: "
+  ]
+},
+{
+  "id": 517,
+  "name": "malma_rest_test_11",
+  "appId": "spark-f7056e95ce984331a5ea2f9512e34034",
+  "owner": null,
+  "proxyUser": null,
+  "state": "idle",
+  "kind": "spark",
+  "appInfo": {
+    "driverLogUrl": null,
+    "sparkUiUrl": null
+  },
+  "log": [
+    "\t volumes: spark-local-dir-1, ivy-settings-volume, hadoop-conf-dev-volume, livy-libs, nfs, spark-conf-volume, spark-token-67z56",
+    "\t node name: ckd02.ckd.dns.teralytics.net",
+    "\t start time: 2021-02-07T13:07:04Z",
+    "\t container images: nexus-docker.local/spark-aws:v2.4.5-20200326-20200526",
+    "\t phase: Pending",
+    "\t status: [ContainerStatus(containerID=null, image=nexus-docker.local/spark-aws:v2.4.5-20200326-20200526, imageID=, lastState=ContainerState(running=null, terminated=null, waiting=null, additionalProperties={}), name=spark-kubernetes-driver, ready=false, restartCount=0, state=ContainerState(running=null, terminated=null, waiting=ContainerStateWaiting(message=null, reason=ContainerCreating, additionalProperties={}), additionalProperties={}), additionalProperties={started=false})]",
+    "21/02/07 13:07:05 INFO Client: Deployed Spark application malma_rest_test_11 into Kubernetes.",
+    "21/02/07 13:07:05 INFO ShutdownHookManager: Shutdown hook called",
+    "21/02/07 13:07:05 INFO ShutdownHookManager: Deleting directory /tmp/spark-d2eef28e-fd9a-4efe-b153-168494b22cb9",
+    "\nKubernetes Diagnostics: "
+  ]
+}

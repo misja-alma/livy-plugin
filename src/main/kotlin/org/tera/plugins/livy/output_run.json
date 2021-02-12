@@ -1,0 +1,4 @@
+{"id":0,"code":"(0 until 10).foreach { x => println (\"hello \" + x)}","state":"waiting","output":null,"progress":0.0}
+{"id":0,"code":"(0 until 10).foreach { x => println (\"hello \" + x)}","state":"running","output":null,"progress":0.0}
+{"id":0,"code":"(0 until 10).foreach { x => println (\"hello \" + x)}","state":"available","output":{"status":"ok","execution_count":0,"data":{"text/plain":"hello 0\nhello 1\nhello 2\nhello 3\nhello 4\nhello 5\nhello 6\nhello 7\nhello 8\nhello 9\n"}},"progress":1.0}
+{"id":0,"code":"(0 until 10).foreach { x => println (\"hello \" + x)}","state":"available","output":{"status":"ok","execution_count":0,"data":{"text/plain":"hello 0\nhello 1\nhello 2\nhello 3\nhello 4\nhello 5\nhello 6\nhello 7\nhello 8\nhello 9\n"}},"progress":1.0}
