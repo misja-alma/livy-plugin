@@ -23,6 +23,13 @@ class LivyRunConfigurationProducer: LazyRunConfigurationProducer<LivyConfigurati
         context: ConfigurationContext,
         sourceElement: Ref<PsiElement>
     ): Boolean {
+        return doSetupConfigurationFromContext(configuration, context)
+    }
+
+    fun doSetupConfigurationFromContext(
+        configuration: LivyConfiguration,
+        context: ConfigurationContext
+    ): Boolean {
         val editors: Array<FileEditor> = FileEditorManager.getInstance(context.project).getSelectedEditors()
         val textEditor: TextEditor = editors.get(0) as TextEditor
         val caretModel: CaretModel = textEditor.editor.getCaretModel()
@@ -75,8 +82,17 @@ class LivyRunConfigurationProducer: LazyRunConfigurationProducer<LivyConfigurati
     }
 
     override fun findExistingConfiguration(context: ConfigurationContext): RunnerAndConfigurationSettings? {
-        // TODO check if exactly the same config already exists? Or should isPreferredConfiguration handle that?
-        return null // Had to be overridden otherwise the name would never change
+        val result = super.findExistingConfiguration(context)
+        if (result != null && result.configuration is LivyConfiguration) {
+            doSetupConfigurationFromContext(result.configuration as LivyConfiguration, context)
+        }
+
+        // TODO
+        // What seems to happen is that Idea checks after this method is:
+        // If it is null, Idea adds the config to the dropdown under a new 'Livy' folder. Check how to reuse this folder!
+        // If it is not null, Idea will try to select it in the dropdown. But if the name changed, it can't do it
+        // (does it compare by reference?) so then 'new configuration..' is shown.
+        return result
     }
 
     override fun findOrCreateConfigurationFromContext(context: ConfigurationContext): ConfigurationFromContext? {
