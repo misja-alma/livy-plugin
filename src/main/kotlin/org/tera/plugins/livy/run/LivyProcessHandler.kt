@@ -80,13 +80,17 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration): ProcessHa
                 val host = config.host
                 var sessionId = config.sessionId
                 if (sessionId == null || sessionId.isBlank()) {
+                    // TODO we should also check here that the session is not dead
                     sessionId = startLivySession(client, host, config.sessionConfig)
                     if (sessionId != null) {
                         Settings.activeSession = sessionId
                         config.sessionId = sessionId
                     } else {
+                        notifyProcessTerminated(1)
                         return
                     }
+                } else {
+                    logText("Using existing session " + sessionId +  "\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
                 }
 
                 val payload = JSONObject()
@@ -97,7 +101,7 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration): ProcessHa
 
                 val response = post(client, url, payload.toString())
                 var result = response.body!!.string()
-                //logText(result + "\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
+
                 val callback = response.header("location")
                 val callbackUrl = "$host$callback"
                 var succes = response.isSuccessful

@@ -1,9 +1,12 @@
 package org.tera.plugins.livy.run
 
+import com.intellij.execution.RunManager
+import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.actions.ConfigurationFromContext
 import com.intellij.execution.actions.LazyRunConfigurationProducer
 import com.intellij.execution.configurations.ConfigurationFactory
+import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.openapi.editor.CaretModel
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -15,27 +18,6 @@ import org.tera.plugins.livy.Settings
 class LivyRunConfigurationProducer: LazyRunConfigurationProducer<LivyConfiguration>() {
     private val configFactory = LivyConfigurationFactory()
 
-    // Note: this method is called already before the action is performed. I guess to be able to show run config name?
-    // Because of this putting a breakpoint here or some blocking UI action will for some reason prevent the Run option to show up
-    override fun createConfigurationFromContext(context: ConfigurationContext): ConfigurationFromContext? {
-        val configuration = super.createConfigurationFromContext(context)
-        if (configuration == null) {
-            return null
-        }
-
-        // TODO find out how to make sure the run configs all are grouped under the 'Livy' folder in the run configs
-        // TODO think of a better way to show a unique name. Or change name at the last moment?
-        //val nextIndex = Settings.lastNameIndex + 1
-        configuration!!.configuration.setName("Livy Run Selection")
-        //Settings.lastNameIndex = nextIndex
-        (configuration!!.configuration as LivyConfiguration).sessionId = Settings.activeSession
-        (configuration!!.configuration as LivyConfiguration).host = Settings.activeHost
-
-        return configuration
-    }
-
-    // Note: this method is called already before the action is performed. I guess to be able to show run config name?
-    // Because of this putting a breakpoint here or some blocking UI action will for some reason prevent the Run option to show up
     override fun setupConfigurationFromContext(
         configuration: LivyConfiguration,
         context: ConfigurationContext,
@@ -50,13 +32,13 @@ class LivyRunConfigurationProducer: LazyRunConfigurationProducer<LivyConfigurati
         }
 
         configuration.code = selectedText
-        //val nextIndex = Settings.lastNameIndex + 1
         // TODO find out how to make sure the run configs all are grouped under the 'Livy' folder in the run configs
-        // TODO this doesn't work?!
-        configuration.setName("Livy Run Selection")
-        //Settings.lastNameIndex = nextIndex
+        if (Settings.activeSession != null) {
+            configuration.setName("Livy session " + Settings.activeSession)
+        } else {
+            configuration.setName("New Livy session")
+        }
 
-        configuration.setGeneratedName()
         configuration.sessionId = Settings.activeSession
         configuration.host = Settings.activeHost
 
@@ -76,6 +58,45 @@ class LivyRunConfigurationProducer: LazyRunConfigurationProducer<LivyConfigurati
     }
 
     override fun isPreferredConfiguration(self: ConfigurationFromContext?, other: ConfigurationFromContext?): Boolean {
+        if (self == null) return false
+        if (other == null) return true
+        if (other.configuration is LivyConfiguration) return true
         return false // Let 'normal' run configs come first
+    }
+
+    // TODO check what to do with these ..
+
+    override fun cloneTemplateConfiguration(context: ConfigurationContext): RunnerAndConfigurationSettings {
+        return super.cloneTemplateConfiguration(context)
+    }
+
+    override fun createLightConfiguration(context: ConfigurationContext): RunConfiguration? {
+        return super.createLightConfiguration(context)
+    }
+
+    override fun findExistingConfiguration(context: ConfigurationContext): RunnerAndConfigurationSettings? {
+        // TODO check if exactly the same config already exists? Or should isPreferredConfiguration handle that?
+        return null // Had to be overridden otherwise the name would never change
+    }
+
+    override fun findOrCreateConfigurationFromContext(context: ConfigurationContext): ConfigurationFromContext? {
+        return super.findOrCreateConfigurationFromContext(context)
+    }
+
+    override fun getConfigurationSettingsList(runManager: RunManager): MutableList<RunnerAndConfigurationSettings> {
+        return super.getConfigurationSettingsList(runManager)
+    }
+
+    override fun onFirstRun(
+        configuration: ConfigurationFromContext,
+        context: ConfigurationContext,
+        startRunnable: Runnable
+    ) {
+        super.onFirstRun(configuration, context, startRunnable)
+    }
+
+    override fun shouldReplace(self: ConfigurationFromContext, other: ConfigurationFromContext): Boolean {
+        // TODO override?
+        return super.shouldReplace(self, other)
     }
 }

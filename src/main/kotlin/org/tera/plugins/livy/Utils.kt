@@ -79,7 +79,7 @@ object Utils {
             val callbackUrl = host + sessionLocation
 
             // TODO reuse this polling loop
-            while (succes && !isCanceled() && !result.contains("idle")) {
+            while (succes && !isCanceled() && !result.contains("idle") && !result.contains("dead")) {
 
                 Thread.sleep(500)
 
@@ -102,11 +102,14 @@ object Utils {
                 }
             }
 
-            if (!isCanceled()) {
+            if (!isCanceled() && result.contains("idle")) {
                 myProgress!!.setText("Session started")
                 val session = sessionLocation.split("/").last()
                 return session
             } else {
+                if (!isCanceled()) {
+                    myProgress!!.setText("Error while starting session")
+                }
                 return null
             }
         } catch (ex: Exception) {
@@ -123,6 +126,7 @@ object Utils {
             .build()
 
         val response = client.newCall(request).execute()
+        // TODO see if we can log this to the event log instead!
         logText("Sent 'POST' request: $postBody to URL : $url; Response Code : ${response.code} \n", ConsoleViewContentType.LOG_INFO_OUTPUT)
         return response
     }
