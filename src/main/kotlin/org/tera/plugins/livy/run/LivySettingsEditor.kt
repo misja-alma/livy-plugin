@@ -1,78 +1,78 @@
 package org.tera.plugins.livy.run
 
 import com.intellij.openapi.options.SettingsEditor
+import com.intellij.openapi.ui.LabeledComponent
+import com.intellij.openapi.ui.VerticalFlowLayout
 import com.intellij.ui.GuiUtils
+import com.intellij.ui.components.fields.ExpandableTextField
+import com.intellij.util.Function
+import com.intellij.util.ui.UIUtil
 import org.tera.plugins.livy.Settings
+import java.awt.BorderLayout
 import java.awt.Dimension
+import java.util.stream.Collectors
 import javax.swing.*
 
 /**
  * TODO options to add:
- * - host url
  * - certificate (option)
  * - checkbox: start new session/ or session id to use
- * - if start new session: session config
- * - textbox containing code to execute
  */
 class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
-    private var myPanel: JPanel = JPanel()
-    private var hostField: JTextField = GuiUtils.createUndoableTextField()
-    private var sessionIdField: JTextField = GuiUtils.createUndoableTextField()
-    private var codeField: JTextArea = JTextArea()
-    private var sessionConfigField: JTextArea = JTextArea()
+    private val lineJoiner: Function<MutableList<String>, String> = Function<MutableList<String>, String>  { lines -> lines.stream().collect(Collectors.joining("\n")) }
+    private val lineParser: Function<in String, MutableList<String>> = Function<String, MutableList<String>> { lines -> lines.split("\n").toMutableList() }
+
+    private val myPanel: JPanel = JPanel()
+    private val hostField: LabeledComponent<JTextField> = LabeledComponent.create(
+        GuiUtils.createUndoableTextField(),
+        "Host"
+    )
+    private val sessionIdField: LabeledComponent<JTextField> = LabeledComponent.create(
+        GuiUtils.createUndoableTextField(),
+        "Sesssion Id"
+    )
+    private val codeField: LabeledComponent<ExpandableTextField> = LabeledComponent.create(
+        ExpandableTextField(lineParser, lineJoiner),
+        "Code"
+    )
+    private val sessionConfigField: LabeledComponent<ExpandableTextField> = LabeledComponent.create(
+        ExpandableTextField(lineParser, lineJoiner),
+        "Configuration"
+    )
 
     override fun createEditor(): JComponent {
-        myPanel.setLayout(null)
-        myPanel.setSize(500, 630)
-        myPanel.setPreferredSize(Dimension(500, 630))
+        myPanel.setLayout(VerticalFlowLayout(VerticalFlowLayout.MIDDLE, 0, 5, true, false))
+        myPanel.setPreferredSize(Dimension(500, 200))
 
-        val hostLabel = JLabel("Host")
-        hostLabel.setBounds(10, 10, 75, 25)
-        hostLabel.setPreferredSize(Dimension(75, 25))
-        myPanel.add(hostLabel)
+        hostField.setLabelLocation(BorderLayout.WEST)
         myPanel.add(hostField)
-        hostField.setPreferredSize(Dimension(400, 25))
-        hostField.setBounds(90, 10, 400, 25)
-
-        val sessionLabel = JLabel("Session")
-        sessionLabel.setBounds(10, 40, 75, 25)
-        sessionLabel.setPreferredSize(Dimension(75, 25))
-        myPanel.add(sessionLabel)
+        sessionIdField.setLabelLocation(BorderLayout.WEST)
         myPanel.add(sessionIdField)
-        sessionIdField.setBounds(90, 40, 100, 25)
-        sessionIdField.setPreferredSize(Dimension(100, 25))
 
-        val sessionConfigLabel = JLabel("Config")
-        sessionConfigLabel.setBounds(10, 70, 75, 25)
-        sessionConfigLabel.setPreferredSize(Dimension(75, 25))
-        myPanel.add(sessionConfigLabel)
+        sessionConfigField.setLabelLocation(BorderLayout.WEST)
         myPanel.add(sessionConfigField)
-        sessionConfigField.setBounds(90, 70, 400, 220)
-        sessionConfigField.setPreferredSize(Dimension(400, 220))
-
-        val codeLabel = JLabel("Code")
-        codeLabel.setBounds(10, 400, 75, 25)
-        codeLabel.setPreferredSize(Dimension(75, 25))
-        myPanel.add(codeLabel)
+        codeField.setLabelLocation(BorderLayout.WEST)
         myPanel.add(codeField)
-        codeField.setBounds(90, 400, 400, 220)
-        codeField.setPreferredSize(Dimension(400, 220))
+
+        myPanel.updateUI()
+        
+        UIUtil.mergeComponentsWithAnchor(hostField, sessionIdField, sessionConfigField, codeField)
 
         return myPanel
     }
 
     override fun resetEditorFrom(configuration: LivyConfiguration) {
-        hostField.text = configuration.host
-        sessionIdField.text = configuration.sessionId
-        codeField.text = configuration.code
-        sessionConfigField.text = configuration.sessionConfig
+        hostField.component.text = configuration.host
+        sessionIdField.component.text = configuration.sessionId
+        codeField.component.text = configuration.code
+        sessionConfigField.component.text = configuration.sessionConfig
     }
 
     override fun applyEditorTo(configuration: LivyConfiguration) {
-        configuration.host = hostField.text
-        configuration.sessionId = sessionIdField.text
-        configuration.code = codeField.text
-        configuration.sessionConfig = sessionConfigField.text
+        configuration.host = hostField.component.text
+        configuration.sessionId = sessionIdField.component.text
+        configuration.code = codeField.component.text
+        configuration.sessionConfig = sessionConfigField.component.text
 
         Settings.activeSession = configuration.sessionId
         Settings.activeHost = configuration.host

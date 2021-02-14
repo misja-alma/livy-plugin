@@ -25,4 +25,8 @@ class LivyConfiguration(project: Project, factory: ConfigurationFactory, name: S
         return LivySettingsEditor()
     }
 
+    override fun getId(): String? {
+        return name
+    }
+
 }
