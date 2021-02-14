@@ -7,6 +7,7 @@ import com.intellij.execution.actions.ConfigurationFromContext
 import com.intellij.execution.actions.LazyRunConfigurationProducer
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.RunConfiguration
+import com.intellij.execution.impl.RunManagerImpl
 import com.intellij.openapi.editor.CaretModel
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -87,11 +88,25 @@ class LivyRunConfigurationProducer: LazyRunConfigurationProducer<LivyConfigurati
             doSetupConfigurationFromContext(result.configuration as LivyConfiguration, context)
         }
 
+        // TODO check these! This one keeps the list of run configs!
+        // Also we add add configs here.
+        val runManager = RunManagerImpl.getInstanceImpl(context.project)
+        //runManager.fireRunConfigurationChanged()
+        // Each config in the list seem to be of type RunnerAndConfigurationsettings
+        //runManager.addConfiguration()
+
         // TODO
         // What seems to happen is that Idea checks after this method is:
         // If it is null, Idea adds the config to the dropdown under a new 'Livy' folder. Check how to reuse this folder!
         // If it is not null, Idea will try to select it in the dropdown. But if the name changed, it can't do it
         // (does it compare by reference?) so then 'new configuration..' is shown.
+
+        // When renaming the livy name, now that the id is the name, this error is shown:
+        // java.lang.Throwable: Livy.Livy session 572 must be added before selecting
+        //	at com.intellij.openapi.diagnostic.Logger.error(Logger.java:146)
+        //	at com.intellij.execution.impl.RunManagerImpl.setSelectedConfiguration(RunManagerImpl.kt:528)
+        // which probably means that when renaming, we have to remove the old one first and add the new renamed one
+        
         return result
     }
 

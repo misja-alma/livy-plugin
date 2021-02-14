@@ -55,7 +55,7 @@ class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
         myPanel.add(codeField)
 
         myPanel.updateUI()
-        
+
         UIUtil.mergeComponentsWithAnchor(hostField, sessionIdField, sessionConfigField, codeField)
 
         return myPanel
