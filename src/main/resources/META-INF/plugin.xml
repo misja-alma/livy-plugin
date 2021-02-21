@@ -8,21 +8,11 @@
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <applicationService serviceImplementation="org.tera.plugins.livy.services.MyApplicationService"/>
-        <projectService serviceImplementation="org.tera.plugins.livy.services.MyProjectService"/>
-        <toolWindow id="LivyToolWindow"
-                    anchor="bottom"
-                    icon="AllIcons.Actions.ArrowExpand"
-                    secondary="false"
-                    factoryClass="com.intellij.execution.services.ServiceViewToolWindowFactory"/>
         <configurationType implementation="org.tera.plugins.livy.run.LivyConfigurationType"/>
         <runConfigurationProducer implementation="org.tera.plugins.livy.run.LivyRunConfigurationProducer"/>
+        <toolWindow id="Livy Sessions" secondary="true" icon="AllIcons.Actions.ArrowExpand" anchor="bottom"
+                    factoryClass="org.tera.plugins.livy.sessions.SessionsPanelFactory"/>
     </extensions>
-
-    <applicationListeners>
-        <listener class="org.tera.plugins.livy.listeners.MyProjectManagerListener"
-                  topic="com.intellij.openapi.project.ProjectManagerListener"/>
-    </applicationListeners>
 
     <actions>
         <action

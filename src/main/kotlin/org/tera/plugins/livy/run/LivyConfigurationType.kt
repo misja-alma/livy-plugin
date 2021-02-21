@@ -25,4 +25,8 @@ class LivyConfigurationType: ConfigurationType {
     override fun getConfigurationFactories(): Array<ConfigurationFactory> {
         return arrayOf(LivyConfigurationFactory())
     }
+
+    override fun isManaged(): Boolean {
+        return false // Override to prevent that name change affects config id. This goes together with the getId override in LivyConfiguration
+    }
 }

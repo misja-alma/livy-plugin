@@ -25,8 +25,7 @@ class LivyConfiguration(project: Project, factory: ConfigurationFactory, name: S
         return LivySettingsEditor()
     }
 
-    override fun getId(): String? {
-        return name
+    override fun getId(): String {
+        return this.hashCode().toString() // overridden to make sure that name changes don't change the id
     }
-
 }

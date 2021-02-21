@@ -43,6 +43,17 @@ object Utils {
         return json.toMap()
     }
 
+    fun deleteSession(client: OkHttpClient,
+                      host: String,
+                      id: Int): Boolean {
+        val request = Request.Builder()
+            .url(Settings.activeHost + "/sessions/" + id)
+            .delete()
+            .build()
+        val response = client.newCall(request).execute()
+        return response.isSuccessful
+    }
+
     fun startLivySession(client: OkHttpClient,
                          host: String,
                          config: String,
@@ -132,7 +143,7 @@ object Utils {
     }
 
 
-    private fun getUnsafeOkHttpClient(): OkHttpClient {
+    fun getUnsafeOkHttpClient(): OkHttpClient {
         // Create a trust manager that does not validate certificate chains
         val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
             override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {

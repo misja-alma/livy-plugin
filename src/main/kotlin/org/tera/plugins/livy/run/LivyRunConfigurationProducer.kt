@@ -39,16 +39,28 @@ class LivyRunConfigurationProducer: LazyRunConfigurationProducer<LivyConfigurati
             return false
         }
 
+        var configurationChanged = false
         configuration.code = selectedText
         // TODO find out how to make sure the run configs all are grouped under the 'Livy' folder in the run configs
         if (Settings.activeSession != null) {
             configuration.setName("Livy session " + Settings.activeSession)
+            if (configuration.sessionId != Settings.activeSession) {
+                configurationChanged = true
+            }
         } else {
             configuration.setName("New Livy session")
         }
 
         configuration.sessionId = Settings.activeSession
         configuration.host = Settings.activeHost
+
+        if (configurationChanged) {
+            val runManager = RunManagerImpl.getInstanceImpl(context.project)
+            val config = runManager.findConfigurationByName(configuration.name)
+            if (config != null) {
+                runManager.fireRunConfigurationChanged(config)
+            }
+        }
 
         return true
     }
@@ -106,7 +118,7 @@ class LivyRunConfigurationProducer: LazyRunConfigurationProducer<LivyConfigurati
         //	at com.intellij.openapi.diagnostic.Logger.error(Logger.java:146)
         //	at com.intellij.execution.impl.RunManagerImpl.setSelectedConfiguration(RunManagerImpl.kt:528)
         // which probably means that when renaming, we have to remove the old one first and add the new renamed one
-        
+
         return result
     }
 

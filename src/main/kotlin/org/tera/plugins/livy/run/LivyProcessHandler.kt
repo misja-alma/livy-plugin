@@ -1,14 +1,10 @@
 package org.tera.plugins.livy.run
 
+import com.intellij.execution.impl.RunManagerImpl
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.ui.ConsoleViewContentType
 import org.json.JSONObject
 import java.io.OutputStream
-import java.lang.Exception
-import java.security.cert.X509Certificate
-import javax.net.ssl.SSLContext
-import javax.net.ssl.TrustManager
-import javax.net.ssl.X509TrustManager
 
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressIndicatorProvider
@@ -19,7 +15,6 @@ import com.intellij.openapi.wm.WindowManager
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.tera.plugins.livy.Settings
 import org.tera.plugins.livy.Utils
 
@@ -47,34 +42,10 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration): ProcessHa
         return Utils.post(client, url, postBody, { text: String, type: ConsoleViewContentType -> logText(text, type) })
     }
 
-
-    private fun getUnsafeOkHttpClient(): OkHttpClient {
-        // Create a trust manager that does not validate certificate chains
-        val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
-            override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {
-            }
-
-            override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {
-            }
-
-            override fun getAcceptedIssuers() = arrayOf<X509Certificate>()
-        })
-
-        // Install the all-trusting trust manager
-        val sslContext = SSLContext.getInstance("SSL")
-        sslContext.init(null, trustAllCerts, java.security.SecureRandom())
-        // Create an ssl socket factory with our all-trusting manager
-        val sslSocketFactory = sslContext.socketFactory
-
-        return OkHttpClient.Builder()
-            .sslSocketFactory(sslSocketFactory, trustAllCerts[0] as X509TrustManager)
-            .hostnameVerifier { _, _ -> true }.build()
-    }
-
     init {
         val task = object:Task.Backgroundable(project, "Livy job", false) {
             override fun run(indicator: ProgressIndicator) {
-                val client = getUnsafeOkHttpClient()
+                val client = Utils.getUnsafeOkHttpClient()
                 val myProgress = ProgressIndicatorProvider.getGlobalProgressIndicator()
 
                 val host = config.host
@@ -83,11 +54,18 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration): ProcessHa
                     // TODO we should also check here that the session is not dead
                     sessionId = startLivySession(client, host, config.sessionConfig)
                     if (sessionId != null) {
+                        config.setName("Livy session " + sessionId)
                         Settings.activeSession = sessionId
                         config.sessionId = sessionId
                     } else {
                         notifyProcessTerminated(1)
                         return
+                    }
+
+                    val runManager = RunManagerImpl.getInstanceImpl(project)
+                    val config = runManager.findConfigurationByName(config.name)
+                    if (config != null) {
+                        runManager.fireRunConfigurationChanged(config)
                     }
                 } else {
                     logText("Using existing session " + sessionId +  "\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
