@@ -61,30 +61,30 @@ class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
     )
 
     override fun createEditor(): JComponent {
-        myPanel.setLayout(VerticalFlowLayout(VerticalFlowLayout.MIDDLE, 0, 5, true, false))
-        myPanel.setPreferredSize(Dimension(500, 400))
+        myPanel.layout = VerticalFlowLayout(VerticalFlowLayout.MIDDLE, 0, 5, true, false)
+        myPanel.preferredSize = Dimension(500, 400)
 
-        hostField.setLabelLocation(BorderLayout.WEST)
+        hostField.labelLocation = BorderLayout.WEST
         myPanel.add(hostField)
-        sessionIdField.setLabelLocation(BorderLayout.WEST)
+        sessionIdField.labelLocation = BorderLayout.WEST
         myPanel.add(sessionIdField)
 
         kindField.setLabelLocation(BorderLayout.WEST)
         myPanel.add(kindField)
-        driverMemoryField.setLabelLocation(BorderLayout.WEST)
+        driverMemoryField.labelLocation = BorderLayout.WEST
         myPanel.add(driverMemoryField)
 
-        executorMemoryField.setLabelLocation(BorderLayout.WEST)
+        executorMemoryField.labelLocation = BorderLayout.WEST
         myPanel.add(executorMemoryField)
-        executorCoresField.setLabelLocation(BorderLayout.WEST)
+        executorCoresField.labelLocation = BorderLayout.WEST
         myPanel.add(executorCoresField)
 
-        numberExecutorsField.setLabelLocation(BorderLayout.WEST)
+        numberExecutorsField.labelLocation = BorderLayout.WEST
         myPanel.add(numberExecutorsField)
 
-        sessionConfigField.setLabelLocation(BorderLayout.WEST)
+        sessionConfigField.labelLocation = BorderLayout.WEST
         myPanel.add(sessionConfigField)
-        codeField.setLabelLocation(BorderLayout.WEST)
+        codeField.labelLocation = BorderLayout.WEST
         myPanel.add(codeField)
 
         myPanel.updateUI()

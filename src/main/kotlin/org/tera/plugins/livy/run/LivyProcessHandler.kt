@@ -39,7 +39,7 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration): ProcessHa
 
 
     fun post(client: OkHttpClient, url: String, postBody: String): Response {
-        return Utils.post(client, url, postBody, { text: String, type: ConsoleViewContentType -> logText(text, type) })
+        return Utils.post(client, url, postBody) { text: String, type: ConsoleViewContentType -> logText(text, type) }
     }
 
     init {
@@ -54,7 +54,7 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration): ProcessHa
                     // TODO we should also check here that the session is not dead
                     sessionId = startLivySession(client, config)
                     if (sessionId != null) {
-                        config.setName("Livy session " + sessionId)
+                        config.name = "Livy session " + sessionId
                         Settings.activeSession = sessionId
                         config.sessionId = sessionId
                     } else {
@@ -68,7 +68,7 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration): ProcessHa
                         runManager.fireRunConfigurationChanged(config)
                     }
                 } else {
-                    logText("Using existing session " + sessionId +  "\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
+                    logText("Using existing session $sessionId\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
                 }
 
                 val payload = JSONObject()
@@ -90,7 +90,6 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration): ProcessHa
                     myProgress!!.setText("Waiting for Statement Result ..")
 
                     Thread.sleep(500)
-
 
                     val request = Request.Builder()
                         .url(callbackUrl)
@@ -114,10 +113,10 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration): ProcessHa
                     val data = jsonObject.getJSONObject("output").getJSONObject("data").getString("text/plain")
 
                     logText(data + "\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
-                    myProgress!!.setText("Statement Finished")
+                    myProgress?.let { it.text = "Statement Finished" }
                 } else {
                     Utils.eventLog("Livy Error", result, NotificationType.ERROR)
-                    myProgress!!.setText("Error")
+                    myProgress?.let { it.text = "Error" }
                 }
 
                 notifyProcessTerminated(0)

@@ -26,7 +26,7 @@ import javax.swing.table.TableColumnModel
 
 class SessionsPanel(toolWindow: ToolWindow) {
     private val refreshToolWindowButton: JButton = JButton("Refresh")
-    private val columnNames = Vector(Arrays.asList("Id", "Name", "State", "AppId", "SparkUIUrl"))
+    private val columnNames = Vector(listOf("Id", "Name", "State", "AppId", "SparkUIUrl"))
     private val deleteToolWindowButton: JButton = JButton("Delete Session")
     private val sessionsModel = object: DefaultTableModel(columnNames, 0) {
         override fun setValueAt(aValue: Any?, row: Int, column: Int) {
@@ -49,7 +49,7 @@ class SessionsPanel(toolWindow: ToolWindow) {
         sessionsTable.columnModel.getColumn(0).setMaxWidth(60)
         sessionsTable.columnModel.getColumn(1).setMaxWidth(120)
         sessionsTable.columnModel.getColumn(2).setMaxWidth(60)
-        sessionsTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN)
+        sessionsTable.autoResizeMode = JTable.AUTO_RESIZE_LAST_COLUMN
         val scroll = JBScrollPane()
         scroll.setViewportView(sessionsTable)
         content.add(scroll, BorderLayout.CENTER)
@@ -110,7 +110,7 @@ class SessionsPanel(toolWindow: ToolWindow) {
         return true
     }
 
-    fun toRows(sessions: List<Session>): Vector<Vector<Any>> {
+    private fun toRows(sessions: List<Session>): Vector<Vector<Any>> {
         val rows = Vector<Vector<Any>>(sessions.size)
         for (session in sessions) {
             rows.add(toRow(session))
@@ -118,7 +118,7 @@ class SessionsPanel(toolWindow: ToolWindow) {
         return rows
     }
 
-    fun toRow(session: Session): Vector<Any> {
+    private fun toRow(session: Session): Vector<Any> {
         val row = Vector<Any>()
         // TODO make this dynamic
         row.add(session.id)

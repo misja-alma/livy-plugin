@@ -13,14 +13,4 @@
         <toolWindow id="Livy Sessions" secondary="true" icon="AllIcons.Actions.ArrowExpand" anchor="bottom"
                     factoryClass="org.tera.plugins.livy.sessions.SessionsPanelFactory"/>
     </extensions>
-
-    <actions>
-        <action
-                id="LivyRunSelectedCodeAction"
-                class="org.tera.plugins.livy.actions.RunSelectedCodeAction"
-                text="Run Selection On Livy"
-                description="Run selection on Livy">
-            <add-to-group group-id="BasicEditorPopupMenu" anchor="last"/>
-        </action>
-    </actions>
 </idea-plugin>

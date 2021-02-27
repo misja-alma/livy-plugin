@@ -27,7 +27,7 @@ class LivyRunConfigurationProducer: LazyRunConfigurationProducer<LivyConfigurati
         return doSetupConfigurationFromContext(configuration, context)
     }
 
-    fun doSetupConfigurationFromContext(
+    private fun doSetupConfigurationFromContext(
         configuration: LivyConfiguration,
         context: ConfigurationContext
     ): Boolean {
@@ -44,7 +44,7 @@ class LivyRunConfigurationProducer: LazyRunConfigurationProducer<LivyConfigurati
         // TODO find out how to make sure the run configs all are grouped under the 'Livy' folder in the run configs
         //      Or are new folders only created for new versions of the plugin?
         if (Settings.activeSession != null) {
-            configuration.setName("Livy session " + Settings.activeSession)
+            configuration.name = "Livy session " + Settings.activeSession
             if (configuration.sessionId != Settings.activeSession) {
                 configurationChanged = true
             }
@@ -75,7 +75,7 @@ class LivyRunConfigurationProducer: LazyRunConfigurationProducer<LivyConfigurati
     override fun isConfigurationFromContext(configuration: LivyConfiguration, context: ConfigurationContext): Boolean {
         val editors: Array<FileEditor> = FileEditorManager.getInstance(context.project).getSelectedEditors()
         val textEditor: TextEditor = editors.get(0) as TextEditor
-        val caretModel: CaretModel = textEditor.editor.getCaretModel()
+        val caretModel: CaretModel = textEditor.editor.caretModel
         val selectedText = caretModel.currentCaret.selectedText
         return selectedText != null
     }

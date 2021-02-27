@@ -55,7 +55,7 @@ object Utils {
                       host: String,
                       id: Int): Boolean {
         val request = Request.Builder()
-            .url(host + "/sessions/" + id)
+            .url("$host/sessions/$id")
             .delete()
             .build()
         val response = client.newCall(request).execute()
@@ -71,7 +71,7 @@ object Utils {
 
         val myProgress = ProgressIndicatorProvider.getGlobalProgressIndicator()
         try {
-            myProgress!!.setText("Starting Livy Session ..")
+            myProgress?.let { it.text = "Starting Livy Session .." }
 
             val payload = JSONObject()
             payload.put("kind", config.kind)
@@ -81,25 +81,27 @@ object Utils {
             payload.put("numExecutors", config.numExecutors)
             payload.put("name", Settings.newSessionName())
             payload.put("conf", sparkConfig)
-            logText("Creating session ...\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
-            val response = post(client, config.host + "/sessions", payload.toString(), logText)
-            var result = response.body!!.string()
-            log.debug(result)
-            if (!response.isSuccessful) {
-                return null
-            }
 
-            val sessionLocation = response.header("location")!!
-            var succes = response.isSuccessful
-            response.close()
+            logText("Creating session ...\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
+            var (result, sessionLocation, success) =
+                post(client, config.host + "/sessions", payload.toString(), logText).use { response ->
+                    val result = response.body!!.string()
+                    log.debug(result)
+                    if (!response.isSuccessful) {
+                        return null
+                    }
+
+                    val sessionLocation = response.header("location")!!
+
+                    Triple(result, sessionLocation, response.isSuccessful)
+                }
 
             val callbackUrl = config.host + sessionLocation
 
             // TODO reuse this polling loop
-            while (succes && !isCanceled() && !result.contains("idle") && !result.contains("dead")) {
+            while (success && !isCanceled() && !result.contains("idle") && !result.contains("dead")) {
 
                 Thread.sleep(500)
-
 
                 val request = Request.Builder()
                     .url(callbackUrl)
@@ -107,31 +109,31 @@ object Utils {
                     .build()
 
                 client.newCall(request).execute().use { response ->
-                    succes = response.isSuccessful
+                    success = response.isSuccessful
                     val responseText = response.body!!.string()
 
                     val jsonObject = JSONObject(responseText)
                     val state = jsonObject.getString("state")
                     val id = jsonObject.getInt("id")
-                    WindowManager.getInstance().getStatusBar(myProject).setInfo("Session " + id + " " + state)
+                    WindowManager.getInstance().getStatusBar(myProject).info = "Session $id $state"
 
                     result = responseText
                 }
             }
 
-            if (!isCanceled() && result.contains("idle")) {
-                myProgress!!.setText("Session started")
+            return if (!isCanceled() && result.contains("idle")) {
+                myProgress?.let { it.text = "Session started" }
                 val session = sessionLocation.split("/").last()
-                return session.toInt()
+                session.toInt()
             } else {
                 if (!isCanceled()) {
-                    myProgress!!.setText("Error while starting session")
+                    myProgress?.let { it.text = "Error while starting session" }
                 }
-                return null
+                null
             }
         } catch (ex: Exception) {
             eventLog("Livy connection error", ex.message!!, NotificationType.ERROR)
-            myProgress!!.setText(ex.message)
+            myProgress?.let { it.text =  ex.message }
             return null
         }
     }
@@ -149,6 +151,7 @@ object Utils {
         return response
     }
 
+    @Suppress("UnresolvedPluginConfigReference")
     fun eventLog(title: String, msg: String, notificationType: NotificationType) {
         val notification = Notification("Livy",
             title,

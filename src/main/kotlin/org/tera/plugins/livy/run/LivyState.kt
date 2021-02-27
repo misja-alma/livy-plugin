@@ -18,7 +18,7 @@ class LivyState(environment: ExecutionEnvironment): RunProfileState {
     init {
         myEnvironment = environment
         val project = environment.getProject()
-        val searchScope = GlobalSearchScopes.executionScope(project, environment.getRunProfile())
+        val searchScope = GlobalSearchScopes.executionScope(project, environment.runProfile)
         myConsoleBuilder = TextConsoleBuilderFactory.getInstance().createBuilder(project, searchScope)
     }
 
@@ -26,7 +26,7 @@ class LivyState(environment: ExecutionEnvironment): RunProfileState {
         val console = myConsoleBuilder.getConsole()
         // TODO in the process handler, start the command on startNotify?
         val runConfig = myEnvironment.runProfile as LivyConfiguration
-        val handler = LivyProcessHandler(myEnvironment.getProject(), runConfig)
+        val handler = LivyProcessHandler(myEnvironment.project, runConfig)
         console.attachToProcess(handler)
 
         return DefaultExecutionResult(console, handler)
