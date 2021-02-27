@@ -4,31 +4,28 @@ import com.intellij.notification.Notification
 import com.intellij.notification.NotificationType
 import com.intellij.notification.Notifications
 import com.intellij.openapi.wm.ToolWindow
-import com.intellij.ui.components.JBList
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.table.JBTable
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.jdesktop.swingx.JXTable
 import org.json.JSONArray
 import org.json.JSONObject
 import org.tera.plugins.livy.Settings
 import org.tera.plugins.livy.Utils
 import java.awt.BorderLayout
-import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.event.ActionEvent
 import java.util.*
-import javax.swing.*
-import javax.swing.table.DefaultTableColumnModel
+import javax.swing.JButton
+import javax.swing.JPanel
+import javax.swing.JTable
 import javax.swing.table.DefaultTableModel
-import javax.swing.table.TableColumnModel
 
 class SessionsPanel(toolWindow: ToolWindow) {
     private val refreshToolWindowButton: JButton = JButton("Refresh")
     private val columnNames = Vector(listOf("Id", "Name", "State", "AppId", "SparkUIUrl"))
     private val deleteToolWindowButton: JButton = JButton("Delete Session")
-    private val sessionsModel = object: DefaultTableModel(columnNames, 0) {
+    private val sessionsModel = object : DefaultTableModel(columnNames, 0) {
         override fun setValueAt(aValue: Any?, row: Int, column: Int) {
         }
     }
@@ -36,7 +33,6 @@ class SessionsPanel(toolWindow: ToolWindow) {
     private val content: JPanel = JPanel(BorderLayout())
 
     private val client: OkHttpClient = Utils.getUnsafeOkHttpClient()
-
 
     init {
         deleteToolWindowButton.addActionListener { e: ActionEvent? -> deleteSelectedSessions() }
@@ -77,14 +73,14 @@ class SessionsPanel(toolWindow: ToolWindow) {
 
     private fun refresh(): Boolean {
         val request = Request.Builder()
-            .url(Settings.activeHost+"/sessions")
+            .url(Settings.activeHost + "/sessions")
             .get()
             .build()
 
         client.newCall(request).execute().use { response ->
             if (!response.isSuccessful) {
                 // TODO check if this works, use it also to log info stuff like requests
-                val notification = Notification("Livy", null, NotificationType.ERROR) //groupId is important for further settings
+                val notification = Notification("Livy", null, NotificationType.ERROR) // groupId is important for further settings
                 Notifications.Bus.notify(notification)
                 return true
             }

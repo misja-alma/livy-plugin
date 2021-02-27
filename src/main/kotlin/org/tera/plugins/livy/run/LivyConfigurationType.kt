@@ -5,7 +5,7 @@ import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.icons.AllIcons
 import javax.swing.Icon
 
-class LivyConfigurationType: ConfigurationType {
+class LivyConfigurationType : ConfigurationType {
     override fun getDisplayName(): String {
         return "Livy"
     }

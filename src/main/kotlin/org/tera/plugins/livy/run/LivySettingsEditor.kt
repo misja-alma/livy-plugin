@@ -11,7 +11,9 @@ import org.tera.plugins.livy.Settings
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.util.stream.Collectors
-import javax.swing.*
+import javax.swing.JComponent
+import javax.swing.JPanel
+import javax.swing.JTextField
 
 /**
  * TODO options to add:

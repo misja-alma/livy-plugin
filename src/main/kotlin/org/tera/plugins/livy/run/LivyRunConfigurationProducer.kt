@@ -16,7 +16,7 @@ import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 import org.tera.plugins.livy.Settings
 
-class LivyRunConfigurationProducer: LazyRunConfigurationProducer<LivyConfiguration>() {
+class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfiguration>() {
     private val configFactory = LivyConfigurationFactory()
 
     override fun setupConfigurationFromContext(
@@ -33,7 +33,7 @@ class LivyRunConfigurationProducer: LazyRunConfigurationProducer<LivyConfigurati
     ): Boolean {
         val editors: Array<FileEditor> = FileEditorManager.getInstance(context.project).getSelectedEditors()
         val textEditor: TextEditor = editors.get(0) as TextEditor
-        val caretModel: CaretModel = textEditor.editor.getCaretModel()
+        val caretModel: CaretModel = textEditor.editor.caretModel
         val selectedText = caretModel.currentCaret.selectedText
         if (selectedText == null) {
             return false
@@ -111,15 +111,13 @@ class LivyRunConfigurationProducer: LazyRunConfigurationProducer<LivyConfigurati
         // Also we add add configs here.
         val runManager = RunManagerImpl.getInstanceImpl(context.project)
         // See also:
-        //runManager.fireRunConfigurationChanged()
+        // runManager.fireRunConfigurationChanged()
         // runManager.addConfiguration()
         // Each config in the list seem to be of type RunnerAndConfigurationsettings
         // Check where the folder structure is kept
 
         return result
     }
-
-
 
     override fun findOrCreateConfigurationFromContext(context: ConfigurationContext): ConfigurationFromContext? {
         return super.findOrCreateConfigurationFromContext(context)

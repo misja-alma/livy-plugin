@@ -4,23 +4,22 @@ import com.intellij.execution.impl.RunManagerImpl
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.notification.NotificationType
-import org.json.JSONObject
-import java.io.OutputStream
-
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
-import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
-
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+import org.json.JSONObject
 import org.tera.plugins.livy.Settings
 import org.tera.plugins.livy.Utils
+import java.io.OutputStream
 
-
-class LivyProcessHandler(project: Project, config: LivyConfiguration): ProcessHandler() {
+class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessHandler() {
     private val myProject = project
     private var isCanceled = false
 
@@ -29,14 +28,14 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration): ProcessHa
     }
 
     fun startLivySession(client: OkHttpClient, config: LivyConfiguration): Int? {
-        return Utils.startLivySession(
+        return Utils.startLivySession (
             client,
             config,
             myProject,
             { isCanceled },
-            {text: String, type: ConsoleViewContentType -> logText(text, type)})
+            { text: String, type: ConsoleViewContentType -> logText(text, type) }
+        )
     }
-
 
     fun post(client: OkHttpClient, url: String, postBody: String): Response {
         return Utils.post(client, url, postBody) { text: String, type: ConsoleViewContentType -> logText(text, type) }
@@ -44,7 +43,7 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration): ProcessHa
 
     init {
         val task = object:Task.Backgroundable(project, "Livy job", false) {
-            override fun run(indicator: ProgressIndicator) {
+            override fun run(indicator : ProgressIndicator) {
                 val client = Utils.getUnsafeOkHttpClient()
                 val myProgress = ProgressIndicatorProvider.getGlobalProgressIndicator()
 
@@ -54,7 +53,7 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration): ProcessHa
                     // TODO we should also check here that the session is not dead
                     sessionId = startLivySession(client, config)
                     if (sessionId != null) {
-                        config.name = "Livy session " + sessionId
+                        config.name = "Livy session $sessionId"
                         Settings.activeSession = sessionId
                         config.sessionId = sessionId
                     } else {
@@ -63,9 +62,9 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration): ProcessHa
                     }
 
                     val runManager = RunManagerImpl.getInstanceImpl(project)
-                    val config = runManager.findConfigurationByName(config.name)
-                    if (config != null) {
-                        runManager.fireRunConfigurationChanged(config)
+                    val runConfig = runManager.findConfigurationByName(config.name)
+                    if (runConfig != null) {
+                        runManager.fireRunConfigurationChanged(runConfig)
                     }
                 } else {
                     logText("Using existing session $sessionId\n", ConsoleViewContentType.LOG_INFO_OUTPUT)

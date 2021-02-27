@@ -4,7 +4,7 @@ import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.openapi.project.Project
 
-class LivyConfigurationFactory: ConfigurationFactory(LivyConfigurationType()) {
+class LivyConfigurationFactory : ConfigurationFactory(LivyConfigurationType()) {
 
     override fun createTemplateConfiguration(project: Project): RunConfiguration {
         return LivyConfiguration(project, this, "Livy")

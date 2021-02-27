@@ -4,6 +4,7 @@ import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationType
 import com.intellij.notification.Notifications
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
@@ -12,15 +13,12 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import org.json.JSONObject
+import org.tera.plugins.livy.run.LivyConfiguration
 import org.tera.plugins.livy.run.LivyProcessHandler
-import java.lang.Exception
 import java.security.cert.X509Certificate
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
-
-import com.intellij.openapi.diagnostic.Logger
-import org.tera.plugins.livy.run.LivyConfiguration
 
 object Utils {
     val log = Logger.getInstance(Utils.javaClass)
@@ -133,7 +131,7 @@ object Utils {
             }
         } catch (ex: Exception) {
             eventLog("Livy connection error", ex.message!!, NotificationType.ERROR)
-            myProgress?.let { it.text =  ex.message }
+            myProgress?.let { it.text = ex.message }
             return null
         }
     }
@@ -153,10 +151,12 @@ object Utils {
 
     @Suppress("UnresolvedPluginConfigReference")
     fun eventLog(title: String, msg: String, notificationType: NotificationType) {
-        val notification = Notification("Livy",
+        val notification = Notification(
+            "Livy",
             title,
             msg,
-            notificationType)
+            notificationType
+        )
         Notifications.Bus.notify(notification)
 //        notification.getBalloon()?.hide() // TODO this doesn't work
     }
