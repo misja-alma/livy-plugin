@@ -5,8 +5,11 @@ import com.intellij.notification.NotificationType
 import com.intellij.notification.Notifications
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.ui.components.JBList
+import com.intellij.ui.components.JBScrollPane
+import com.intellij.ui.table.JBTable
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.jdesktop.swingx.JXTable
 import org.json.JSONArray
 import org.json.JSONObject
 import org.tera.plugins.livy.Settings
@@ -15,17 +18,21 @@ import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.event.ActionEvent
-import javax.swing.DefaultListModel
-import javax.swing.JButton
-import javax.swing.JPanel
+import java.util.*
+import javax.swing.*
+import javax.swing.table.DefaultTableColumnModel
+import javax.swing.table.DefaultTableModel
+import javax.swing.table.TableColumnModel
 
-// See FileTemplateTabAsList
-// TODO a table would be better. Would enable configuring columns, copying values and eliminate the need for field labels in the UI
 class SessionsPanel(toolWindow: ToolWindow) {
     private val refreshToolWindowButton: JButton = JButton("Refresh")
+    private val columnNames = Vector(Arrays.asList("Id", "Name", "State", "AppId", "SparkUIUrl"))
     private val deleteToolWindowButton: JButton = JButton("Delete Session")
-    private val sessionsModel = DefaultListModel<Session>()
-    private val sessionsList = JBList(sessionsModel)
+    private val sessionsModel = object: DefaultTableModel(columnNames, 0) {
+        override fun setValueAt(aValue: Any?, row: Int, column: Int) {
+        }
+    }
+    private val sessionsTable = JBTable(sessionsModel)
     private val content: JPanel = JPanel(BorderLayout())
 
     private val client: OkHttpClient = Utils.getUnsafeOkHttpClient()
@@ -35,11 +42,17 @@ class SessionsPanel(toolWindow: ToolWindow) {
         deleteToolWindowButton.addActionListener { e: ActionEvent? -> deleteSelectedSessions() }
         refreshToolWindowButton.addActionListener { e: ActionEvent? -> refresh() }
 
-        content.setPreferredSize(Dimension(600, 600))
         val bottomPanel = JPanel(FlowLayout())
         bottomPanel.add(refreshToolWindowButton)
         bottomPanel.add(deleteToolWindowButton)
-        content.add(sessionsList, BorderLayout.CENTER)
+
+        sessionsTable.columnModel.getColumn(0).setMaxWidth(60)
+        sessionsTable.columnModel.getColumn(1).setMaxWidth(120)
+        sessionsTable.columnModel.getColumn(2).setMaxWidth(60)
+        sessionsTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN)
+        val scroll = JBScrollPane()
+        scroll.setViewportView(sessionsTable)
+        content.add(scroll, BorderLayout.CENTER)
         content.add(bottomPanel, BorderLayout.SOUTH)
         content.updateUI()
     }
@@ -50,11 +63,15 @@ class SessionsPanel(toolWindow: ToolWindow) {
 
     // TODO maybe show popup with are you sure or so, progress bar, ... Maybe less needed with autorefresh of sessions
     private fun deleteSelectedSessions(): Boolean {
-        sessionsList.selectedValuesList.forEach { s ->
-            s.run {
-                Utils.deleteSession(client, Settings.activeHost, s.id)
+        sessionsTable.selectedRows.forEach { rowNr ->
+            rowNr.run {
+                // TODo look up col dynamically
+                val victim = sessionsModel.getValueAt(rowNr, 0) as Int
+                Utils.deleteSession(client, Settings.activeHost, victim)
+                if (Settings.activeSession == victim) Settings.activeSession = null
             }
         }
+        refresh()
         return true
     }
 
@@ -76,24 +93,39 @@ class SessionsPanel(toolWindow: ToolWindow) {
 
             val responseObject = JSONObject(responseText)
             val jsonSessions: JSONArray = responseObject.getJSONArray("sessions")
-            val sessions = jsonSessions.map { s: Any ->
+            val sessions: List<Session> = jsonSessions.map { s: Any ->
                 val jsonObject = s as JSONObject
                 val state = jsonObject.getString("state")
                 val id = jsonObject.getInt("id")
                 val name = jsonObject.optString("name")
-                val appId = jsonObject.getString("appId")
-                val sparkUIUrl = jsonObject.getJSONObject("appInfo").optString("sparkUiUrl")
+                val appId = jsonObject.optString("appId")
+                val sparkUIUrl = jsonObject.optJSONObject("appInfo")?.optString("sparkUiUrl")
                 Session(id, name, state, appId, sparkUIUrl)
             }
 
             // TODO run in thread and invoke in IntelliJ/SwingUtils.invokeLater?
-            sessionsModel.removeAllElements()
-            for (session in sessions) {
-                sessionsModel.addElement(session)
-            }
-            // TODO how to fire contents changed? Also maybe be more precise with replacing/updating
+            sessionsModel.setDataVector(toRows(sessions), columnNames)
         }
 
         return true
+    }
+
+    fun toRows(sessions: List<Session>): Vector<Vector<Any>> {
+        val rows = Vector<Vector<Any>>(sessions.size)
+        for (session in sessions) {
+            rows.add(toRow(session))
+        }
+        return rows
+    }
+
+    fun toRow(session: Session): Vector<Any> {
+        val row = Vector<Any>()
+        // TODO make this dynamic
+        row.add(session.id)
+        row.add(session.name)
+        row.add(session.state)
+        row.add(session.appId)
+        row.add(session.sparkUIUrl)
+        return row
     }
 }

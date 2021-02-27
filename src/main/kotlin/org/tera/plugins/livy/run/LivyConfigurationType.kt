@@ -27,6 +27,9 @@ class LivyConfigurationType: ConfigurationType {
     }
 
     override fun isManaged(): Boolean {
-        return false // Override to prevent that name change affects config id. This goes together with the getId override in LivyConfiguration
+        // TODO but because this is false, user can't change it!
+        // TODO was Overridden to prevent that name change affects config id. This goes together with the getId override in LivyConfiguration
+        // Now that it is true, the effect is that a new config that changes to config for session, is not selected in the run configs dropdown
+        return true
     }
 }

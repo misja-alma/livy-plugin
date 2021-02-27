@@ -1,7 +1,7 @@
 package org.tera.plugins.livy
 
 object Settings {
-    var activeSession: String? = null
+    var activeSession: Int? = null
     var activeHost: String = "https://livy-dev.service.ckd.dns.teralytics.net"
     var sessionName = "malma_idea"
 

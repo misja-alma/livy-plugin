@@ -42,6 +42,7 @@ class LivyRunConfigurationProducer: LazyRunConfigurationProducer<LivyConfigurati
         var configurationChanged = false
         configuration.code = selectedText
         // TODO find out how to make sure the run configs all are grouped under the 'Livy' folder in the run configs
+        //      Or are new folders only created for new versions of the plugin?
         if (Settings.activeSession != null) {
             configuration.setName("Livy session " + Settings.activeSession)
             if (configuration.sessionId != Settings.activeSession) {
@@ -65,6 +66,12 @@ class LivyRunConfigurationProducer: LazyRunConfigurationProducer<LivyConfigurati
         return true
     }
 
+    /**
+     * The idea is to always use the same run configuration regardless if the selected text changed. So we
+     * only check that any text is selected at all.
+     * As an alternative we could check if the selected text changed, maybe we could make this configurable.
+     * TODO maybe we should make the file type be configurable for which Livy configs can be run
+     */
     override fun isConfigurationFromContext(configuration: LivyConfiguration, context: ConfigurationContext): Boolean {
         val editors: Array<FileEditor> = FileEditorManager.getInstance(context.project).getSelectedEditors()
         val textEditor: TextEditor = editors.get(0) as TextEditor
@@ -80,8 +87,8 @@ class LivyRunConfigurationProducer: LazyRunConfigurationProducer<LivyConfigurati
     override fun isPreferredConfiguration(self: ConfigurationFromContext?, other: ConfigurationFromContext?): Boolean {
         if (self == null) return false
         if (other == null) return true
-        if (other.configuration is LivyConfiguration) return true
-        return false // Let 'normal' run configs come first
+        return self.configuration !is LivyConfiguration
+        // Trying to let other configs always take precedence. Maybe make this configurable?
     }
 
     // TODO check what to do with these ..
@@ -103,24 +110,16 @@ class LivyRunConfigurationProducer: LazyRunConfigurationProducer<LivyConfigurati
         // TODO check these! This one keeps the list of run configs!
         // Also we add add configs here.
         val runManager = RunManagerImpl.getInstanceImpl(context.project)
+        // See also:
         //runManager.fireRunConfigurationChanged()
+        // runManager.addConfiguration()
         // Each config in the list seem to be of type RunnerAndConfigurationsettings
-        //runManager.addConfiguration()
-
-        // TODO
-        // What seems to happen is that Idea checks after this method is:
-        // If it is null, Idea adds the config to the dropdown under a new 'Livy' folder. Check how to reuse this folder!
-        // If it is not null, Idea will try to select it in the dropdown. But if the name changed, it can't do it
-        // (does it compare by reference?) so then 'new configuration..' is shown.
-
-        // When renaming the livy name, now that the id is the name, this error is shown:
-        // java.lang.Throwable: Livy.Livy session 572 must be added before selecting
-        //	at com.intellij.openapi.diagnostic.Logger.error(Logger.java:146)
-        //	at com.intellij.execution.impl.RunManagerImpl.setSelectedConfiguration(RunManagerImpl.kt:528)
-        // which probably means that when renaming, we have to remove the old one first and add the new renamed one
+        // Check where the folder structure is kept
 
         return result
     }
+
+
 
     override fun findOrCreateConfigurationFromContext(context: ConfigurationContext): ConfigurationFromContext? {
         return super.findOrCreateConfigurationFromContext(context)

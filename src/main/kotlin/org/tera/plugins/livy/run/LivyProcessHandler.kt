@@ -3,6 +3,7 @@ package org.tera.plugins.livy.run
 import com.intellij.execution.impl.RunManagerImpl
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.ui.ConsoleViewContentType
+import com.intellij.notification.NotificationType
 import org.json.JSONObject
 import java.io.OutputStream
 
@@ -27,10 +28,9 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration): ProcessHa
         val MEDIA_TYPE_JSON = "application/json".toMediaType()
     }
 
-    fun startLivySession(client: OkHttpClient, host: String, config: String): String? {
+    fun startLivySession(client: OkHttpClient, config: LivyConfiguration): Int? {
         return Utils.startLivySession(
             client,
-            host,
             config,
             myProject,
             { isCanceled },
@@ -50,9 +50,9 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration): ProcessHa
 
                 val host = config.host
                 var sessionId = config.sessionId
-                if (sessionId == null || sessionId.isBlank()) {
+                if (sessionId == null) {
                     // TODO we should also check here that the session is not dead
-                    sessionId = startLivySession(client, host, config.sessionConfig)
+                    sessionId = startLivySession(client, config)
                     if (sessionId != null) {
                         config.setName("Livy session " + sessionId)
                         Settings.activeSession = sessionId
@@ -109,11 +109,16 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration): ProcessHa
                     }
                 }
 
-                val jsonObject = JSONObject(result)
-                val data = jsonObject.getJSONObject("output").getJSONObject("data").getString("text/plain")
+                if (succes) {
+                    val jsonObject = JSONObject(result)
+                    val data = jsonObject.getJSONObject("output").getJSONObject("data").getString("text/plain")
 
-                logText(data + "\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
-                myProgress!!.setText("Statement Finished")
+                    logText(data + "\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
+                    myProgress!!.setText("Statement Finished")
+                } else {
+                    Utils.eventLog("Livy Error", result, NotificationType.ERROR)
+                    myProgress!!.setText("Error")
+                }
 
                 notifyProcessTerminated(0)
             }

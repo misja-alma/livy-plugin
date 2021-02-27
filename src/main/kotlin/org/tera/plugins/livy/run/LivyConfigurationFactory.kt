@@ -14,6 +14,7 @@ class LivyConfigurationFactory: ConfigurationFactory(LivyConfigurationType()) {
         return "Livy Configuration Factory"
     }
 
-    // TODO
-    //  The default implementation of ConfigurationFactory.getId is deprecated, you need to override it in org.tera.plugins.livy.run.LivyConfigurationFactory.
+    override fun getId(): String {
+        return "Livy Configuration Factory"
+    }
 }

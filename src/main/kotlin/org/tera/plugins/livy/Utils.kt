@@ -1,6 +1,9 @@
 package org.tera.plugins.livy
 
 import com.intellij.execution.ui.ConsoleViewContentType
+import com.intellij.notification.Notification
+import com.intellij.notification.NotificationType
+import com.intellij.notification.Notifications
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
@@ -16,7 +19,12 @@ import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 
+import com.intellij.openapi.diagnostic.Logger
+import org.tera.plugins.livy.run.LivyConfiguration
+
 object Utils {
+    val log = Logger.getInstance(Utils.javaClass)
+
     // * %%configure -f
     //{
     //    "driverMemory": "20G",
@@ -47,7 +55,7 @@ object Utils {
                       host: String,
                       id: Int): Boolean {
         val request = Request.Builder()
-            .url(Settings.activeHost + "/sessions/" + id)
+            .url(host + "/sessions/" + id)
             .delete()
             .build()
         val response = client.newCall(request).execute()
@@ -55,30 +63,28 @@ object Utils {
     }
 
     fun startLivySession(client: OkHttpClient,
-                         host: String,
-                         config: String,
+                         config: LivyConfiguration,
                          myProject: Project,
                          isCanceled: () -> Boolean,
-                         logText: (String, ConsoleViewContentType) -> Unit): String? {
-        val sparkConfig = parseSessionConfig(config)
+                         logText: (String, ConsoleViewContentType) -> Unit): Int? {
+        val sparkConfig = parseSessionConfig(config.sessionConfig)
 
         val myProgress = ProgressIndicatorProvider.getGlobalProgressIndicator()
         try {
             myProgress!!.setText("Starting Livy Session ..")
 
             val payload = JSONObject()
-            // TODO get these from run config!
-            payload.put("kind", "spark")
-            payload.put("driverMemory", "20G")
-            payload.put("executorMemory", "15G")
-            payload.put("executorCores", 3)
-            payload.put("numExecutors", 2)
+            payload.put("kind", config.kind)
+            payload.put("driverMemory", config.driverMemory)
+            payload.put("executorMemory", config.executorMemory)
+            payload.put("executorCores", config.executorCores)
+            payload.put("numExecutors", config.numExecutors)
             payload.put("name", Settings.newSessionName())
             payload.put("conf", sparkConfig)
             logText("Creating session ...\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
-            val response = post(client, host + "/sessions", payload.toString(), logText)
+            val response = post(client, config.host + "/sessions", payload.toString(), logText)
             var result = response.body!!.string()
-            logText(result + "\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
+            log.debug(result)
             if (!response.isSuccessful) {
                 return null
             }
@@ -87,7 +93,7 @@ object Utils {
             var succes = response.isSuccessful
             response.close()
 
-            val callbackUrl = host + sessionLocation
+            val callbackUrl = config.host + sessionLocation
 
             // TODO reuse this polling loop
             while (succes && !isCanceled() && !result.contains("idle") && !result.contains("dead")) {
@@ -116,7 +122,7 @@ object Utils {
             if (!isCanceled() && result.contains("idle")) {
                 myProgress!!.setText("Session started")
                 val session = sessionLocation.split("/").last()
-                return session
+                return session.toInt()
             } else {
                 if (!isCanceled()) {
                     myProgress!!.setText("Error while starting session")
@@ -124,6 +130,7 @@ object Utils {
                 return null
             }
         } catch (ex: Exception) {
+            eventLog("Livy connection error", ex.message!!, NotificationType.ERROR)
             myProgress!!.setText(ex.message)
             return null
         }
@@ -137,11 +144,19 @@ object Utils {
             .build()
 
         val response = client.newCall(request).execute()
-        // TODO see if we can log this to the event log instead!
-        logText("Sent 'POST' request: $postBody to URL : $url; Response Code : ${response.code} \n", ConsoleViewContentType.LOG_INFO_OUTPUT)
+        val msg = "Sent 'POST' request: $postBody to URL : $url; Response Code : ${response.code} \n"
+        log.debug(msg)
         return response
     }
 
+    fun eventLog(title: String, msg: String, notificationType: NotificationType) {
+        val notification = Notification("Livy",
+            title,
+            msg,
+            notificationType)
+        Notifications.Bus.notify(notification)
+//        notification.getBalloon()?.hide() // TODO this doesn't work
+    }
 
     fun getUnsafeOkHttpClient(): OkHttpClient {
         // Create a trust manager that does not validate certificate chains
