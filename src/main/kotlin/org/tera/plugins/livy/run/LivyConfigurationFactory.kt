@@ -7,7 +7,7 @@ import com.intellij.openapi.project.Project
 class LivyConfigurationFactory : ConfigurationFactory(LivyConfigurationType()) {
 
     override fun createTemplateConfiguration(project: Project): RunConfiguration {
-        return LivyConfiguration(project, this, "Livy")
+        return LivyConfiguration(project, this, LivyConfiguration.defaultName)
     }
 
     override fun getName(): String {

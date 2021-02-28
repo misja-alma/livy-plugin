@@ -9,6 +9,9 @@ import com.intellij.openapi.project.Project
 import org.tera.plugins.livy.Settings
 
 class LivyConfiguration(project: Project, factory: ConfigurationFactory, name: String?) : LocatableConfigurationBase<LivyOptions>(project, factory, name) {
+    companion object {
+        val defaultName = "Livy"
+    }
     var host: String = Settings.activeHost
     var sessionId: Int? = Settings.activeSession
     var code: String = ""

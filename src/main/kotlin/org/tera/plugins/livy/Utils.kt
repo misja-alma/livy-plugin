@@ -130,7 +130,7 @@ object Utils {
                 null
             }
         } catch (ex: Exception) {
-            eventLog("Livy connection error", ex.message!!, NotificationType.ERROR)
+            eventLog("Livy connection error", ex.toString(), NotificationType.ERROR)
             myProgress?.let { it.text = ex.message }
             return null
         }

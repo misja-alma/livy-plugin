@@ -18,7 +18,12 @@ import org.json.JSONObject
 import org.tera.plugins.livy.Settings
 import org.tera.plugins.livy.Utils
 import java.io.OutputStream
+import kotlin.math.roundToInt
 
+/**
+ * This class is instantiated by Idea when a Livy run config should be executed:
+ * this class sends a statement request to Livy and creates a new session if no active session is selected in the config.
+ */
 class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessHandler() {
     private val myProject = project
     private var isCanceled = false
@@ -42,31 +47,45 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
     }
 
     init {
-        val task = object:Task.Backgroundable(project, "Livy job", false) {
+        val task = object:Task.Backgroundable(project, "Livy job", true) {
+
             override fun run(indicator : ProgressIndicator) {
+                try {
+                    doRun(indicator)
+                } catch (ex: Exception) {
+                    Utils.eventLog("Uncaught Exception", ex.toString(), NotificationType.ERROR)
+                    notifyProcessTerminated(1)
+                }
+            }
+
+            private fun doRun(indicator : ProgressIndicator) {
                 val client = Utils.getUnsafeOkHttpClient()
                 val myProgress = ProgressIndicatorProvider.getGlobalProgressIndicator()
 
                 val host = config.host
                 var sessionId = config.sessionId
                 if (sessionId == null) {
-                    // TODO we should also check here that the session is not dead
                     sessionId = startLivySession(client, config)
+                    val oldSessionName = config.name
                     if (sessionId != null) {
-                        config.name = "Livy session $sessionId"
+                        if (config.name == LivyConfiguration.defaultName) {
+                            config.name = "${LivyConfiguration.defaultName} $sessionId"
+                        }
                         Settings.activeSession = sessionId
                         config.sessionId = sessionId
                     } else {
+                        logText("Could not start new Livy session", ConsoleViewContentType.LOG_ERROR_OUTPUT)
                         notifyProcessTerminated(1)
                         return
                     }
 
                     val runManager = RunManagerImpl.getInstanceImpl(project)
-                    val runConfig = runManager.findConfigurationByName(config.name)
+                    val runConfig = runManager.findConfigurationByName(oldSessionName)
                     if (runConfig != null) {
                         runManager.fireRunConfigurationChanged(runConfig)
                     }
                 } else {
+                    // TODO we could still check here that the old session is not dead
                     logText("Using existing session $sessionId\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
                 }
 
@@ -85,7 +104,7 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
                 response.close()
 
                 while (succes && !isCanceled && !result.contains("available")) {
-
+                    myProgress!!.checkCanceled() // Will throw a ProcessCanceledException if cancel button was pressed
                     myProgress!!.setText("Waiting for Statement Result ..")
 
                     Thread.sleep(500)
@@ -101,7 +120,7 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
                         val jsonObject = JSONObject(responseText)
                         val state = jsonObject.getString("state")
                         val progress = jsonObject.getDouble("progress")
-                        WindowManager.getInstance().getStatusBar(myProject).setInfo(state + ", progress: " + (Math.round(progress * 100)) + "%")
+                        WindowManager.getInstance().getStatusBar(myProject).setInfo(state + ", progress: " + ((progress * 100).roundToInt()) + "%")
 
                         result = responseText
                     }
@@ -114,6 +133,7 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
                     logText(data + "\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
                     myProgress?.let { it.text = "Statement Finished" }
                 } else {
+                    logText("Error while fetching Livy statement result", ConsoleViewContentType.LOG_ERROR_OUTPUT)
                     Utils.eventLog("Livy Error", result, NotificationType.ERROR)
                     myProgress?.let { it.text = "Error" }
                 }
@@ -126,18 +146,16 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
     }
 
     fun logText(text: String, type: ConsoleViewContentType) {
-        // TODO find out what this Key should be used for
+        // TODO find out what this Key is used for
         notifyTextAvailable(text, com.intellij.openapi.util.Key.create<String>(type.toString()))
     }
 
     override fun destroyProcessImpl() {
-        // TODO interrupt thread and throw terminate event?
         isCanceled = true
         notifyProcessTerminated(0)
     }
 
     override fun detachProcessImpl() {
-        // TODO interrupt thread and throw terminate event?
         isCanceled = true
         notifyProcessDetached()
     }
