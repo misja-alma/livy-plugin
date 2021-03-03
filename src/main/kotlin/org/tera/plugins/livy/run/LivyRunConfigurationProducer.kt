@@ -81,11 +81,12 @@ class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfigurat
      * TODO maybe we should make the file type be configurable for which Livy configs can be run
      */
     override fun isConfigurationFromContext(configuration: LivyConfiguration, context: ConfigurationContext): Boolean {
-        val editors: Array<FileEditor> = FileEditorManager.getInstance(context.project).getSelectedEditors()
-        val textEditor: TextEditor = editors.get(0) as TextEditor
-        val caretModel: CaretModel = textEditor.editor.caretModel
-        val selectedText = caretModel.currentCaret.selectedText
-        return selectedText != null
+//        val editors: Array<FileEditor> = FileEditorManager.getInstance(context.project).getSelectedEditors()
+//        val textEditor: TextEditor = editors.get(0) as TextEditor
+//        val caretModel: CaretModel = textEditor.editor.caretModel
+//        val selectedText = caretModel.currentCaret.selectedText
+//        return selectedText != null
+        return true
     }
 
     override fun getConfigurationFactory(): ConfigurationFactory {
