@@ -35,18 +35,19 @@ class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfigurat
         configuration: LivyConfiguration,
         context: ConfigurationContext
     ): Boolean {
-        val editors: Array<FileEditor> = FileEditorManager.getInstance(context.project).getSelectedEditors()
-        val textEditor: TextEditor = editors.get(0) as TextEditor
-        val caretModel: CaretModel = textEditor.editor.caretModel
-        val selectedText = caretModel.currentCaret.selectedText
-        if (selectedText == null) {
-            return false
-        }
+
+//        val editors: Array<FileEditor> = FileEditorManager.getInstance(context.project).getSelectedEditors()
+//        val textEditor: TextEditor = editors.get(0) as TextEditor
+//        val caretModel: CaretModel = textEditor.editor.caretModel
+//        val selectedText = caretModel.currentCaret.selectedText
+//        if (selectedText == null) {
+//            return false
+//        }
 
         // TODO this doesn't belong here! We only need to take care of this when something is actually run
         //var configurationChanged = false
 
-        configuration.code = selectedText
+        //configuration.code = selectedText
         // TODO find out how to make sure the run configs all are grouped under the 'Livy' folder in the run configs
         //      Or are new folders only created for new versions of the plugin?
         if (Settings.activeSession != null) {
