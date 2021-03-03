@@ -16,6 +16,10 @@ import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 import org.tera.plugins.livy.Settings
 
+// TODO Livy run config appears late in the context menu and sometimes disappears again later
+// See com.intellij.openapi.actionSystem.impl.Utils for initialisation logic.
+// Registry.intValue("run.configuration.update.timeout") => initial 100!
+// so maybe this times out all the time and prevents the Livy action from showing
 class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfiguration>() {
     private val configFactory = LivyConfigurationFactory()
 
@@ -39,15 +43,17 @@ class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfigurat
             return false
         }
 
-        var configurationChanged = false
+        // TODO this doesn't belong here! We only need to take care of this when something is actually run
+        //var configurationChanged = false
+
         configuration.code = selectedText
         // TODO find out how to make sure the run configs all are grouped under the 'Livy' folder in the run configs
         //      Or are new folders only created for new versions of the plugin?
         if (Settings.activeSession != null) {
             configuration.name = "Livy session " + Settings.activeSession
-            if (configuration.sessionId != Settings.activeSession) {
-                configurationChanged = true
-            }
+//            if (configuration.sessionId != Settings.activeSession) {
+//                configurationChanged = true
+//            }
         } else {
             configuration.setName("New Livy session")
         }
@@ -55,13 +61,14 @@ class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfigurat
         configuration.sessionId = Settings.activeSession
         configuration.host = Settings.activeHost
 
-        if (configurationChanged) {
-            val runManager = RunManagerImpl.getInstanceImpl(context.project)
-            val config = runManager.findConfigurationByName(configuration.name)
-            if (config != null) {
-                runManager.fireRunConfigurationChanged(config)
-            }
-        }
+//
+//        if (configurationChanged) {
+//            val runManager = RunManagerImpl.getInstanceImpl(context.project)
+//            val config = runManager.findConfigurationByName(configuration.name)
+//            if (config != null) {
+//                runManager.fireRunConfigurationChanged(config)
+//            }
+//        }
 
         return true
     }
@@ -89,16 +96,6 @@ class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfigurat
         if (other == null) return true
         return self.configuration !is LivyConfiguration
         // Trying to let other configs always take precedence. Maybe make this configurable?
-    }
-
-    // TODO check what to do with these ..
-
-    override fun cloneTemplateConfiguration(context: ConfigurationContext): RunnerAndConfigurationSettings {
-        return super.cloneTemplateConfiguration(context)
-    }
-
-    override fun createLightConfiguration(context: ConfigurationContext): RunConfiguration? {
-        return super.createLightConfiguration(context)
     }
 
     override fun findExistingConfiguration(context: ConfigurationContext): RunnerAndConfigurationSettings? {

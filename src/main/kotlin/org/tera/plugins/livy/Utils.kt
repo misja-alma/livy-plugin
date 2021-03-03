@@ -77,7 +77,7 @@ object Utils {
             payload.put("executorMemory", config.executorMemory)
             payload.put("executorCores", config.executorCores)
             payload.put("numExecutors", config.numExecutors)
-            payload.put("name", Settings.newSessionName())
+            payload.put("name", config.sessionName)
             payload.put("conf", sparkConfig)
 
             logText("Creating session ...\n", ConsoleViewContentType.LOG_INFO_OUTPUT)

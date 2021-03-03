@@ -2,11 +2,12 @@ package org.tera.plugins.livy
 
 object Settings {
     var activeSession: Int? = null
+    // TODO persist and reload these settings, maybe add panel
     var activeHost: String = "https://livy-dev.service.ckd.dns.teralytics.net"
-    var sessionName = "malma_idea"
+    var sessionPrefix = "malma_idea"
 
-    fun newSessionName(): String {
+    fun generateSessionName(): String {
         val currentTime = System.currentTimeMillis()
-        return sessionName + "_" + currentTime
+        return sessionPrefix + "_" + currentTime
     }
 }

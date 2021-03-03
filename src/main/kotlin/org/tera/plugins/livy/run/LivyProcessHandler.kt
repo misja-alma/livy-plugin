@@ -82,6 +82,11 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
                     val runManager = RunManagerImpl.getInstanceImpl(project)
                     val runConfig = runManager.findConfigurationByName(oldSessionName)
                     if (runConfig != null) {
+                        // TODO this sometimes takes effect really late ..
+                        // This is probably because the below method should be called when there is really a new runconfig!
+                        // In our case the run config is the same, and this is checked in the Idea UI
+                        runManager.clearAll()
+                        runManager.addConfiguration(runConfig)
                         runManager.fireRunConfigurationChanged(runConfig)
                     }
                 } else {
@@ -103,9 +108,10 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
                 var succes = response.isSuccessful
                 response.close()
 
+                // TODO might need better check than just the string available, maybe some statements are available and some not yet?
                 while (succes && !isCanceled && !result.contains("available")) {
-                    myProgress!!.checkCanceled() // Will throw a ProcessCanceledException if cancel button was pressed
-                    myProgress!!.setText("Waiting for Statement Result ..")
+                    myProgress?.checkCanceled() // Will throw a ProcessCanceledException if cancel button was pressed
+                    myProgress?.text = "Waiting for Statement Result .."
 
                     Thread.sleep(500)
 
@@ -120,17 +126,24 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
                         val jsonObject = JSONObject(responseText)
                         val state = jsonObject.getString("state")
                         val progress = jsonObject.getDouble("progress")
-                        WindowManager.getInstance().getStatusBar(myProject).setInfo(state + ", progress: " + ((progress * 100).roundToInt()) + "%")
-
+                        myProgress?.fraction = progress
+                        WindowManager.getInstance().getStatusBar(myProject).info = state + ", progress: " + ((progress * 100).roundToInt()) + "%"
                         result = responseText
                     }
                 }
 
                 if (succes) {
                     val jsonObject = JSONObject(result)
-                    val data = jsonObject.getJSONObject("output").getJSONObject("data").getString("text/plain")
+                    val status = jsonObject.getJSONObject("output").getString("status")
+                    if (status != "error") {
+                        val data = jsonObject.getJSONObject("output").getJSONObject("data").getString("text/plain")
 
-                    logText(data + "\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
+                        logText(data + "\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
+                    } else {
+                        val error = jsonObject.getJSONObject("output").getJSONObject("evalue").getString("text/plain")
+
+                        logText(error, ConsoleViewContentType.LOG_ERROR_OUTPUT)
+                    }
                     myProgress?.let { it.text = "Statement Finished" }
                 } else {
                     logText("Error while fetching Livy statement result", ConsoleViewContentType.LOG_ERROR_OUTPUT)

@@ -33,6 +33,10 @@ class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
         GuiUtils.createUndoableTextField(),
         "Sesssion Id"
     )
+    private val sessionNameField: LabeledComponent<JTextField> = LabeledComponent.create(
+        GuiUtils.createUndoableTextField(),
+        "Sesssion Name"
+    )
     private val kindField: LabeledComponent<JTextField> = LabeledComponent.create(
         GuiUtils.createUndoableTextField(),
         "Kind"
@@ -70,6 +74,8 @@ class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
         myPanel.add(hostField)
         sessionIdField.labelLocation = BorderLayout.WEST
         myPanel.add(sessionIdField)
+        sessionNameField.labelLocation = BorderLayout.WEST
+        myPanel.add(sessionNameField)
 
         kindField.setLabelLocation(BorderLayout.WEST)
         myPanel.add(kindField)
@@ -91,7 +97,7 @@ class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
 
         myPanel.updateUI()
 
-        UIUtil.mergeComponentsWithAnchor(hostField, sessionIdField, kindField, driverMemoryField,
+        UIUtil.mergeComponentsWithAnchor(hostField, sessionIdField, sessionNameField, kindField, driverMemoryField,
             executorMemoryField, executorCoresField, numberExecutorsField, sessionConfigField, codeField)
 
         return myPanel
@@ -100,6 +106,7 @@ class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
     override fun resetEditorFrom(configuration: LivyConfiguration) {
         hostField.component.text = configuration.host
         sessionIdField.component.text = idToString(configuration.sessionId)
+        sessionNameField.component.text = configuration.sessionName
         kindField.component.text = configuration.kind
         driverMemoryField.component.text = configuration.driverMemory
         executorMemoryField.component.text = configuration.executorMemory
@@ -112,6 +119,7 @@ class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
     override fun applyEditorTo(configuration: LivyConfiguration) {
         configuration.host = hostField.component.text
         configuration.sessionId = idToInt(sessionIdField.component.text)
+        configuration.sessionName = sessionIdField.component.text
         configuration.kind = kindField.component.text
         configuration.driverMemory = driverMemoryField.component.text
         configuration.executorMemory = executorMemoryField.component.text
