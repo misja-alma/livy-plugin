@@ -32,7 +32,7 @@ class SessionsPanel(toolWindow: ToolWindow) {
     private val sessionsTable = JBTable(sessionsModel)
     private val content: JPanel = JPanel(BorderLayout())
 
-    private val client: OkHttpClient = Utils.getUnsafeOkHttpClient()
+    private val client: OkHttpClient = Utils.getUnsafeOkHttpClient(60)
 
     init {
         deleteToolWindowButton.addActionListener { e: ActionEvent? -> deleteSelectedSessions() }
@@ -79,7 +79,6 @@ class SessionsPanel(toolWindow: ToolWindow) {
 
         client.newCall(request).execute().use { response ->
             if (!response.isSuccessful) {
-                // TODO check if this works, use it also to log info stuff like requests
                 val notification = Notification("Livy", null, NotificationType.ERROR) // groupId is important for further settings
                 Notifications.Bus.notify(notification)
                 return true

@@ -57,6 +57,10 @@ class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
         GuiUtils.createUndoableTextField(),
         "Nr. of Executors"
     )
+    private val statementTimeoutField: LabeledComponent<JTextField> = LabeledComponent.create(
+        GuiUtils.createUndoableTextField(),
+        "Statement timeout (sec)"
+    )
     private val codeField: LabeledComponent<ExpandableTextField> = LabeledComponent.create(
         ExpandableTextField(lineParser, lineJoiner),
         "Code"
@@ -89,6 +93,8 @@ class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
 
         numberExecutorsField.labelLocation = BorderLayout.WEST
         myPanel.add(numberExecutorsField)
+        statementTimeoutField.labelLocation = BorderLayout.WEST
+        myPanel.add(statementTimeoutField)
 
         sessionConfigField.labelLocation = BorderLayout.WEST
         myPanel.add(sessionConfigField)
@@ -112,6 +118,7 @@ class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
         executorMemoryField.component.text = configuration.executorMemory
         executorCoresField.component.text = configuration.executorCores.toString()
         numberExecutorsField.component.text = configuration.numExecutors.toString()
+        statementTimeoutField.component.text = configuration.statementTimeout.toString()
         codeField.component.text = configuration.code
         sessionConfigField.component.text = configuration.sessionConfig
     }
@@ -125,6 +132,7 @@ class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
         configuration.executorMemory = executorMemoryField.component.text
         configuration.executorCores = executorCoresField.component.text.toInt()
         configuration.numExecutors = numberExecutorsField.component.text.toInt()
+        configuration.statementTimeout = statementTimeoutField.component.text.toInt()
         configuration.code = codeField.component.text
         configuration.sessionConfig = sessionConfigField.component.text
 

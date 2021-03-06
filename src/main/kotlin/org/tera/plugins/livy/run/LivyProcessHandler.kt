@@ -59,7 +59,7 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
             }
 
             private fun doRun(indicator : ProgressIndicator) {
-                val client = Utils.getUnsafeOkHttpClient()
+                val client = Utils.getUnsafeOkHttpClient(config.statementTimeout)
                 val myProgress = ProgressIndicatorProvider.getGlobalProgressIndicator()
 
                 val host = config.host
@@ -126,6 +126,10 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
                         val jsonObject = JSONObject(responseText)
                         val state = jsonObject.getString("state")
                         val progress = jsonObject.getDouble("progress")
+                        if (!succes && jsonObject.has("output")) {
+                            // log intermediary output. Seems to never to contain anything though.
+                            logText(jsonObject.get("output").toString() + "\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
+                        }
                         myProgress?.fraction = progress
                         WindowManager.getInstance().getStatusBar(myProject).info = state + ", progress: " + ((progress * 100).roundToInt()) + "%"
                         result = responseText
@@ -140,7 +144,7 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
 
                         logText(data + "\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
                     } else {
-                        val error = jsonObject.getJSONObject("output").getJSONObject("evalue").getString("text/plain")
+                        val error = jsonObject.getJSONObject("output").getString("evalue")
 
                         logText(error, ConsoleViewContentType.LOG_ERROR_OUTPUT)
                     }
@@ -155,11 +159,11 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
             }
         }
 
-        ProgressManager.getInstance().run(task) // TODO or runProcess with a ProgressIndicator?
+        ProgressManager.getInstance().run(task)
     }
 
     fun logText(text: String, type: ConsoleViewContentType) {
-        // TODO find out what this Key is used for
+        // TODO find out what this Key is used for, setting it to Error or Info doesn't seem to make any difference
         notifyTextAvailable(text, com.intellij.openapi.util.Key.create<String>(type.toString()))
     }
 

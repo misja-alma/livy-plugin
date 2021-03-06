@@ -19,7 +19,8 @@ import org.tera.plugins.livy.Settings
 // TODO Livy run config appears late in the context menu and sometimes disappears again later
 // See com.intellij.openapi.actionSystem.impl.Utils for initialisation logic.
 // Registry.intValue("run.configuration.update.timeout") => initial 100!
-// so maybe this times out all the time and prevents the Livy action from showing
+// this times out all the time and prevents the Livy action from showing so one solution is to increase it
+// Also during indexing the action will not show up
 class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfiguration>() {
     private val configFactory = LivyConfigurationFactory()
 
@@ -36,40 +37,24 @@ class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfigurat
         context: ConfigurationContext
     ): Boolean {
 
-//        val editors: Array<FileEditor> = FileEditorManager.getInstance(context.project).getSelectedEditors()
-//        val textEditor: TextEditor = editors.get(0) as TextEditor
-//        val caretModel: CaretModel = textEditor.editor.caretModel
-//        val selectedText = caretModel.currentCaret.selectedText
-//        if (selectedText == null) {
-//            return false
-//        }
+        // TODO check if this can be done via context.psiElement, that might be faster
+        val editors: Array<FileEditor> = FileEditorManager.getInstance(context.project).getSelectedEditors()
+        val textEditor: TextEditor = editors.get(0) as TextEditor
+        val caretModel: CaretModel = textEditor.editor.caretModel
+        val selectedText = caretModel.currentCaret.selectedText
+        if (selectedText == null) {
+            return false
+        }
 
-        // TODO this doesn't belong here! We only need to take care of this when something is actually run
-        //var configurationChanged = false
-
-        //configuration.code = selectedText
-        // TODO find out how to make sure the run configs all are grouped under the 'Livy' folder in the run configs
-        //      Or are new folders only created for new versions of the plugin?
+        configuration.code = selectedText
         if (Settings.activeSession != null) {
             configuration.name = "Livy session " + Settings.activeSession
-//            if (configuration.sessionId != Settings.activeSession) {
-//                configurationChanged = true
-//            }
         } else {
             configuration.setName("New Livy session")
         }
 
         configuration.sessionId = Settings.activeSession
         configuration.host = Settings.activeHost
-
-//
-//        if (configurationChanged) {
-//            val runManager = RunManagerImpl.getInstanceImpl(context.project)
-//            val config = runManager.findConfigurationByName(configuration.name)
-//            if (config != null) {
-//                runManager.fireRunConfigurationChanged(config)
-//            }
-//        }
 
         return true
     }
@@ -78,15 +63,14 @@ class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfigurat
      * The idea is to always use the same run configuration regardless if the selected text changed. So we
      * only check that any text is selected at all.
      * As an alternative we could check if the selected text changed, maybe we could make this configurable.
-     * TODO maybe we should make the file type be configurable for which Livy configs can be run
      */
     override fun isConfigurationFromContext(configuration: LivyConfiguration, context: ConfigurationContext): Boolean {
-//        val editors: Array<FileEditor> = FileEditorManager.getInstance(context.project).getSelectedEditors()
-//        val textEditor: TextEditor = editors.get(0) as TextEditor
-//        val caretModel: CaretModel = textEditor.editor.caretModel
-//        val selectedText = caretModel.currentCaret.selectedText
-//        return selectedText != null
-        return true
+        // TODO check if this can be done via context.psiElement
+        val editors: Array<FileEditor> = FileEditorManager.getInstance(context.project).getSelectedEditors()
+        val textEditor: TextEditor = editors.get(0) as TextEditor
+        val caretModel: CaretModel = textEditor.editor.caretModel
+        val selectedText = caretModel.currentCaret.selectedText
+        return selectedText != null
     }
 
     override fun getConfigurationFactory(): ConfigurationFactory {
@@ -105,15 +89,6 @@ class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfigurat
         if (result != null && result.configuration is LivyConfiguration) {
             doSetupConfigurationFromContext(result.configuration as LivyConfiguration, context)
         }
-
-        // TODO check these! This one keeps the list of run configs!
-        // Also we add add configs here.
-        val runManager = RunManagerImpl.getInstanceImpl(context.project)
-        // See also:
-        // runManager.fireRunConfigurationChanged()
-        // runManager.addConfiguration()
-        // Each config in the list seem to be of type RunnerAndConfigurationsettings
-        // Check where the folder structure is kept
 
         return result
     }
@@ -135,7 +110,6 @@ class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfigurat
     }
 
     override fun shouldReplace(self: ConfigurationFromContext, other: ConfigurationFromContext): Boolean {
-        // TODO override?
         return super.shouldReplace(self, other)
     }
 }

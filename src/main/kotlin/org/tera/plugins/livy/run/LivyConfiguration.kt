@@ -22,6 +22,7 @@ class LivyConfiguration(project: Project, factory: ConfigurationFactory, name: S
     var executorCores: Int = 3
     var numExecutors: Int = 2
     var sessionName: String = Settings.generateSessionName()
+    var statementTimeout: Int = 3600
     var sessionConfig: String =
         """{        
 "spark.kubernetes.executor.request.cores": "5",
@@ -42,7 +43,7 @@ class LivyConfiguration(project: Project, factory: ConfigurationFactory, name: S
         return this.hashCode().toString() // overridden to make sure that name changes don't change the id
     }
 
-    override fun suggestedName(): String { // TODO check if this name works well enough
+    override fun suggestedName(): String {
         return "$defaultName $sessionId"
     }
 }

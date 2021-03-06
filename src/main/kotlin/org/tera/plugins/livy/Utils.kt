@@ -16,6 +16,7 @@ import org.json.JSONObject
 import org.tera.plugins.livy.run.LivyConfiguration
 import org.tera.plugins.livy.run.LivyProcessHandler
 import java.security.cert.X509Certificate
+import java.time.Duration
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
@@ -23,28 +24,7 @@ import javax.net.ssl.X509TrustManager
 object Utils {
     val log = Logger.getInstance(Utils.javaClass)
 
-    // * %%configure -f
-    //{
-    //    "driverMemory": "20G",
-    //    "executorMemory": "22G",
-    //    "executorCores": 5,
-    //    "numExecutors": 20,
-    //    "name": "malma_sbb",
-    //    "conf": {
-    //        "spark.kubernetes.executor.request.cores": "5",
-    //        "spark.kubernetes.container.image": "nexus-docker.local/spark-aws:v2.4.5-20200326-20200526",
-    //        "spark.jars.packages": "net.teralytics:home-work-assembly:21.1.3+35-273efd21",
-    //        "spark.sql.broadcastTimeout": "1200"
-    //    }
-    //}
-    //             val sparkConfig: MutableMap<String, out Comparable<*>> = mutableMapOf(
-    //                "spark.kubernetes.executor.request.cores" to 5,
-    //                "spark.kubernetes.container.image" to "nexus-docker.local/spark-aws:v2.4.5-20200326-20200526",
-    //                "nexus-docker.local/spark-aws:v2.4.5-20200326-20200526" to "net.teralytics:home-work-assembly:21.1.3+35-273efd21",
-    //                "spark.sql.broadcastTimeout" to "1200"
-    //            )
-
-    fun parseSessionConfig(config: String): MutableMap<String, Any> {
+    private fun parseSessionConfig(config: String): MutableMap<String, Any> {
         val json = JSONObject(config)
         return json.toMap()
     }
@@ -69,7 +49,7 @@ object Utils {
 
         val myProgress = ProgressIndicatorProvider.getGlobalProgressIndicator()
         try {
-            myProgress?.let { it.text = "Starting Livy Session .." }
+            myProgress?.text = "Starting Livy Session .."
 
             val payload = JSONObject()
             payload.put("kind", config.kind)
@@ -96,7 +76,6 @@ object Utils {
 
             val callbackUrl = config.host + sessionLocation
 
-            // TODO reuse this polling loop
             while (success && !isCanceled() && !result.contains("idle") && !result.contains("dead")) {
 
                 Thread.sleep(500)
@@ -161,7 +140,7 @@ object Utils {
 //        notification.getBalloon()?.hide() // TODO this doesn't work
     }
 
-    fun getUnsafeOkHttpClient(): OkHttpClient {
+    fun getUnsafeOkHttpClient(callTimeoutSec: Int): OkHttpClient {
         // Create a trust manager that does not validate certificate chains
         val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
             override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {
@@ -181,6 +160,7 @@ object Utils {
 
         return OkHttpClient.Builder()
             .sslSocketFactory(sslSocketFactory, trustAllCerts[0] as X509TrustManager)
+            .callTimeout(Duration.ofSeconds(callTimeoutSec.toLong()))
             .hostnameVerifier { _, _ -> true }.build()
     }
 }
