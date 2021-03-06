@@ -21,6 +21,9 @@ import javax.swing.JPanel
 import javax.swing.JTable
 import javax.swing.table.DefaultTableModel
 
+/**
+ * The panel showing the list of running Livy sessions
+ */
 class SessionsPanel(toolWindow: ToolWindow) {
     private val refreshToolWindowButton: JButton = JButton("Refresh")
     private val columnNames = Vector(listOf("Id", "Name", "State", "AppId", "SparkUIUrl"))
@@ -61,7 +64,7 @@ class SessionsPanel(toolWindow: ToolWindow) {
     private fun deleteSelectedSessions(): Boolean {
         sessionsTable.selectedRows.forEach { rowNr ->
             rowNr.run {
-                // TODo look up col dynamically
+                // TODO look up col dynamically
                 val victim = sessionsModel.getValueAt(rowNr, 0) as Int
                 Utils.deleteSession(client, Settings.activeHost, victim)
                 if (Settings.activeSession == victim) Settings.activeSession = null
@@ -115,7 +118,7 @@ class SessionsPanel(toolWindow: ToolWindow) {
 
     private fun toRow(session: Session): Vector<Any> {
         val row = Vector<Any>()
-        // TODO make this dynamic
+        // TODO look up column dynamically
         row.add(session.id)
         row.add(session.name)
         row.add(session.state)

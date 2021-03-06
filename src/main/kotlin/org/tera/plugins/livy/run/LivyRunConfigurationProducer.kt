@@ -16,11 +16,17 @@ import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 import org.tera.plugins.livy.Settings
 
-// TODO Livy run config appears late in the context menu and sometimes disappears again later
-// See com.intellij.openapi.actionSystem.impl.Utils for initialisation logic.
-// Registry.intValue("run.configuration.update.timeout") => initial 100!
-// this times out all the time and prevents the Livy action from showing so one solution is to increase it
-// Also during indexing the action will not show up
+/**
+ * The class responsible for showing the 'Run Livy Session ..' option in the action menu
+ *
+ * TODO Livy run config appears late in the context menu and sometimes disappears again later
+ * This is due to how Intellij populates its lazy context popup.
+ * See com.intellij.openapi.actionSystem.impl.Utils for initialisation logic.
+ *
+ * Registry.intValue("run.configuration.update.timeout") => initial 100 ms
+ * this times out all the time and prevents the Livy action from showing so one solution is to increase it
+ * Also during indexing the action will not show up.
+*/
 class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfiguration>() {
     private val configFactory = LivyConfigurationFactory()
 
@@ -32,6 +38,11 @@ class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfigurat
         return doSetupConfigurationFromContext(configuration, context)
     }
 
+    /**
+     * This is called by IntelliJ when the user invokes the context menu; if this returns true then the livy
+     * config option is shown in the popup.
+     * The implementation checks if any text is selected and if it is, it sets up the config and returns true.
+     */
     private fun doSetupConfigurationFromContext(
         configuration: LivyConfiguration,
         context: ConfigurationContext

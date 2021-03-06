@@ -14,6 +14,8 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import org.jetbrains.annotations.NotNull
+import org.jetbrains.annotations.Nullable
 import org.json.JSONObject
 import org.tera.plugins.livy.Settings
 import org.tera.plugins.livy.Utils
@@ -64,6 +66,7 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
 
                 val host = config.host
                 var sessionId = config.sessionId
+
                 if (sessionId == null) {
                     sessionId = startLivySession(client, config)
                     val oldSessionName = config.name
@@ -79,81 +82,13 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
                         return
                     }
 
-                    val runManager = RunManagerImpl.getInstanceImpl(project)
-                    val runConfig = runManager.findConfigurationByName(oldSessionName)
-                    if (runConfig != null) {
-                        // TODO this sometimes takes effect really late ..
-                        // This is probably because the below method should be called when there is really a new runconfig!
-                        // In our case the run config is the same, and this is checked in the Idea UI
-                        runManager.clearAll()
-                        runManager.addConfiguration(runConfig)
-                        runManager.fireRunConfigurationChanged(runConfig)
-                    }
+                    updateRunconfiguration(project, oldSessionName)
                 } else {
                     // TODO we could still check here that the old session is not dead
                     logText("Using existing session $sessionId\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
                 }
 
-                val payload = JSONObject()
-                payload.put("code", config.code)
-
-
-                val url = "$host/sessions/$sessionId/statements"
-
-                val response = post(client, url, payload.toString())
-                var result = response.body!!.string()
-
-                val callback = response.header("location")
-                val callbackUrl = "$host$callback"
-                var succes = response.isSuccessful
-                response.close()
-
-                // TODO might need better check than just the string available, maybe some statements are available and some not yet?
-                while (succes && !isCanceled && !result.contains("available")) {
-                    myProgress?.checkCanceled() // Will throw a ProcessCanceledException if cancel button was pressed
-                    myProgress?.text = "Waiting for Statement Result .."
-
-                    Thread.sleep(500)
-
-                    val request = Request.Builder()
-                        .url(callbackUrl)
-                        .get()
-                        .build()
-
-                    client.newCall(request).execute().use { response ->
-                        succes = response.isSuccessful
-                        val responseText = response.body!!.string()
-                        val jsonObject = JSONObject(responseText)
-                        val state = jsonObject.getString("state")
-                        val progress = jsonObject.getDouble("progress")
-                        if (!succes && jsonObject.has("output")) {
-                            // log intermediary output. Seems to never to contain anything though.
-                            logText(jsonObject.get("output").toString() + "\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
-                        }
-                        myProgress?.fraction = progress
-                        WindowManager.getInstance().getStatusBar(myProject).info = state + ", progress: " + ((progress * 100).roundToInt()) + "%"
-                        result = responseText
-                    }
-                }
-
-                if (succes) {
-                    val jsonObject = JSONObject(result)
-                    val status = jsonObject.getJSONObject("output").getString("status")
-                    if (status != "error") {
-                        val data = jsonObject.getJSONObject("output").getJSONObject("data").getString("text/plain")
-
-                        logText(data + "\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
-                    } else {
-                        val error = jsonObject.getJSONObject("output").getString("evalue")
-
-                        logText(error, ConsoleViewContentType.LOG_ERROR_OUTPUT)
-                    }
-                    myProgress?.let { it.text = "Statement Finished" }
-                } else {
-                    logText("Error while fetching Livy statement result", ConsoleViewContentType.LOG_ERROR_OUTPUT)
-                    Utils.eventLog("Livy Error", result, NotificationType.ERROR)
-                    myProgress?.let { it.text = "Error" }
-                }
+                executeStatement(config, host, sessionId, client, myProgress)
 
                 notifyProcessTerminated(0)
             }
@@ -161,6 +96,94 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
 
         ProgressManager.getInstance().run(task)
     }
+
+    private fun updateRunconfiguration(
+        project: Project,
+        oldSessionName: @NotNull String
+    ) {
+        val runManager = RunManagerImpl.getInstanceImpl(project)
+        val runConfig = runManager.findConfigurationByName(oldSessionName)
+        if (runConfig != null) {
+            // TODO this sometimes takes effect really late ..
+            // This is probably because the below method should be called when there is really a new runconfig!
+            // In our case the run config is the same, and this is checked in the Idea UI
+            runManager.clearAll()
+            runManager.addConfiguration(runConfig)
+            runManager.fireRunConfigurationChanged(runConfig)
+        }
+    }
+
+    private fun executeStatement(
+        config: LivyConfiguration,
+        host: String,
+        sessionId: Int?,
+        client: OkHttpClient,
+        myProgress: @Nullable ProgressIndicator?
+    ) {
+        val payload = JSONObject()
+        payload.put("code", config.code)
+
+        val url = "$host/sessions/$sessionId/statements"
+
+        val response = post(client, url, payload.toString())
+        var result = response.body!!.string()
+
+        val callback = response.header("location")
+        val callbackUrl = "$host$callback"
+        var succes = response.isSuccessful
+        response.close()
+
+        // Poll Livy for Statement result until either the waiting is canceled or there is a result
+        while (succes && !isCanceled && !statementFinished(result)) {
+            myProgress?.checkCanceled() // Will throw a ProcessCanceledException if cancel button was pressed
+            myProgress?.text = "Waiting for Statement Result .."
+
+            Thread.sleep(500)
+
+            val request = Request.Builder()
+                .url(callbackUrl)
+                .get()
+                .build()
+
+            client.newCall(request).execute().use { response ->
+                succes = response.isSuccessful
+                val responseText = response.body!!.string()
+                val jsonObject = JSONObject(responseText)
+                val state = jsonObject.getString("state")
+                val progress = jsonObject.getDouble("progress")
+                if (!succes && jsonObject.has("output")) {
+                    // log intermediary output. Seems to never to contain anything though.
+                    logText(jsonObject.get("output").toString() + "\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
+                }
+                myProgress?.fraction = progress
+                WindowManager.getInstance().getStatusBar(myProject).info =
+                    state + ", progress: " + ((progress * 100).roundToInt()) + "%"
+                result = responseText
+            }
+        }
+
+        if (succes) {
+            val jsonObject = JSONObject(result)
+            val status = jsonObject.getJSONObject("output").getString("status")
+            if (status != "error") {
+                val data = jsonObject.getJSONObject("output").getJSONObject("data").getString("text/plain")
+
+                logText(data + "\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
+            } else {
+                val error = jsonObject.getJSONObject("output").getString("evalue")
+
+                logText(error, ConsoleViewContentType.LOG_ERROR_OUTPUT)
+            }
+            myProgress?.let { it.text = "Statement Finished" }
+        } else {
+            logText("Error while fetching Livy statement result", ConsoleViewContentType.LOG_ERROR_OUTPUT)
+            Utils.eventLog("Livy Error", result, NotificationType.ERROR)
+            myProgress?.let { it.text = "Error" }
+        }
+    }
+
+    // TODO might need better check than just the string available, maybe some statements are available and some not yet?
+    private fun statementFinished(responseBody: String): Boolean = responseBody.contains("available")
 
     fun logText(text: String, type: ConsoleViewContentType) {
         // TODO find out what this Key is used for, setting it to Error or Info doesn't seem to make any difference
