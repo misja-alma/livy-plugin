@@ -9,7 +9,7 @@ import com.intellij.ui.content.ContentFactory
 class SessionsPanelFactory : ToolWindowFactory {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-        val myToolWindow = SessionsPanel(toolWindow)
+        val myToolWindow = SessionsPanel()
         val contentFactory = ContentFactory.SERVICE.getInstance()
         val content = contentFactory.createContent(myToolWindow.getContent(), "", true)
         toolWindow.contentManager.addContent(content)

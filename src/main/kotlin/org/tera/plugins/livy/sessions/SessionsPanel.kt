@@ -3,11 +3,12 @@ package org.tera.plugins.livy.sessions
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationType
 import com.intellij.notification.Notifications
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.ui.components.JBScrollPane
-import com.intellij.ui.table.JBTable
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.jdesktop.swingx.JXTable
 import org.json.JSONArray
 import org.json.JSONObject
 import org.tera.plugins.livy.Settings
@@ -24,7 +25,7 @@ import javax.swing.table.DefaultTableModel
 /**
  * The panel showing the list of running Livy sessions
  */
-class SessionsPanel(toolWindow: ToolWindow) {
+class SessionsPanel() {
     private val refreshToolWindowButton: JButton = JButton("Refresh")
     private val columnNames = Vector(listOf("Id", "Name", "State", "AppId", "SparkUIUrl"))
     private val deleteToolWindowButton: JButton = JButton("Delete Session")
@@ -32,7 +33,7 @@ class SessionsPanel(toolWindow: ToolWindow) {
         override fun setValueAt(aValue: Any?, row: Int, column: Int) {
         }
     }
-    private val sessionsTable = JBTable(sessionsModel)
+    private val sessionsTable = JXTable(sessionsModel)
     private val content: JPanel = JPanel(BorderLayout())
 
     private val client: OkHttpClient = Utils.getUnsafeOkHttpClient(60)
@@ -45,10 +46,9 @@ class SessionsPanel(toolWindow: ToolWindow) {
         bottomPanel.add(refreshToolWindowButton)
         bottomPanel.add(deleteToolWindowButton)
 
-        sessionsTable.columnModel.getColumn(0).setMaxWidth(60)
-        sessionsTable.columnModel.getColumn(1).setMaxWidth(120)
-        sessionsTable.columnModel.getColumn(2).setMaxWidth(60)
         sessionsTable.autoResizeMode = JTable.AUTO_RESIZE_LAST_COLUMN
+        sessionsTable.autoCreateColumnsFromModel = false
+
         val scroll = JBScrollPane()
         scroll.setViewportView(sessionsTable)
         content.add(scroll, BorderLayout.CENTER)
@@ -60,18 +60,23 @@ class SessionsPanel(toolWindow: ToolWindow) {
         return content
     }
 
-    // TODO maybe show popup with are you sure or so, progress bar, ... Maybe less needed with autorefresh of sessions
+    // TODO maybe show popup with are you sure or so, progress bar/ hour glass, ... Maybe less needed with autorefresh of sessions
     private fun deleteSelectedSessions(): Boolean {
-        sessionsTable.selectedRows.forEach { rowNr ->
-            rowNr.run {
-                // TODO look up col dynamically
-                val victim = sessionsModel.getValueAt(rowNr, 0) as Int
-                Utils.deleteSession(client, Settings.activeHost, victim)
-                if (Settings.activeSession == victim) Settings.activeSession = null
+        // TODO look up sessionId dynamically
+        val selectedSessions = sessionsTable.selectedRows.map { sessionsModel.getValueAt(it, 0) as Int }
+
+        val deleteAction = Runnable {
+            selectedSessions.forEach { deleteThis ->
+                deleteThis.run {
+                    Utils.deleteSession(client, Settings.activeHost, deleteThis)
+                    if (Settings.activeSession == this) Settings.activeSession = null
+                }
             }
         }
-        refresh()
-        return true
+
+        ApplicationManager.getApplication().invokeLater(deleteAction)
+
+        return refresh()
     }
 
     private fun refresh(): Boolean {
@@ -80,30 +85,39 @@ class SessionsPanel(toolWindow: ToolWindow) {
             .get()
             .build()
 
-        client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) {
-                val notification = Notification("Livy", null, NotificationType.ERROR) // groupId is important for further settings
-                Notifications.Bus.notify(notification)
-                return true
+        val refreshAction = Runnable {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    val notification =
+                        Notification(
+                            "Livy",
+                            null,
+                            NotificationType.ERROR
+                        ) // groupId is important for further settings
+                    Notifications.Bus.notify(notification)
+                } else {
+
+                    val responseText = response.body!!.string()
+
+                    val responseObject = JSONObject(responseText)
+                    val jsonSessions: JSONArray = responseObject.getJSONArray("sessions")
+                    val sessions: List<Session> = jsonSessions.map { s: Any ->
+                        val jsonObject = s as JSONObject
+                        val state = jsonObject.getString("state")
+                        val id = jsonObject.getInt("id")
+                        val name = jsonObject.optString("name")
+                        val appId = jsonObject.optString("appId")
+                        val sparkUIUrl = jsonObject.optJSONObject("appInfo")?.optString("sparkUiUrl")
+                        Session(id, name, state, appId, sparkUIUrl)
+                    }
+
+                    sessionsModel.setDataVector(toRows(sessions), columnNames)
+                    sessionsTable.packAll()
+                }
             }
-
-            val responseText = response.body!!.string()
-
-            val responseObject = JSONObject(responseText)
-            val jsonSessions: JSONArray = responseObject.getJSONArray("sessions")
-            val sessions: List<Session> = jsonSessions.map { s: Any ->
-                val jsonObject = s as JSONObject
-                val state = jsonObject.getString("state")
-                val id = jsonObject.getInt("id")
-                val name = jsonObject.optString("name")
-                val appId = jsonObject.optString("appId")
-                val sparkUIUrl = jsonObject.optJSONObject("appInfo")?.optString("sparkUiUrl")
-                Session(id, name, state, appId, sparkUIUrl)
-            }
-
-            // TODO run in thread and invoke in IntelliJ/SwingUtils.invokeLater?
-            sessionsModel.setDataVector(toRows(sessions), columnNames)
         }
+
+        ApplicationManager.getApplication().invokeLater(refreshAction)
 
         return true
     }
