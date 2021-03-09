@@ -19,9 +19,10 @@ import org.tera.plugins.livy.Settings
 /**
  * The class responsible for showing the 'Run Livy Session ..' option in the action menu
  *
- * TODO Livy run config appears late in the context menu and sometimes disappears again later
+ * Note Livy run config appears late in the context menu and sometimes disappears again later
  * This is due to how Intellij populates its lazy context popup.
  * See com.intellij.openapi.actionSystem.impl.Utils for initialisation logic.
+ * Intellij bug ticket: https://youtrack.jetbrains.com/issue/IDEA-206889?_ga=2.182916198.1332934996.1615203001-488187979.1603277938
  *
  * Registry.intValue("run.configuration.update.timeout") => initial 100 ms
  * this times out all the time and prevents the Livy action from showing so one solution is to increase it
@@ -52,9 +53,9 @@ class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfigurat
         val editors: Array<FileEditor> = FileEditorManager.getInstance(context.project).getSelectedEditors()
         val textEditor: TextEditor = editors.get(0) as TextEditor
         val caretModel: CaretModel = textEditor.editor.caretModel
-        val selectedText = caretModel.currentCaret.selectedText
+        var selectedText = caretModel.currentCaret.selectedText
         if (selectedText == null) {
-            return false
+            selectedText = ""
         }
 
         configuration.code = selectedText
@@ -77,11 +78,12 @@ class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfigurat
      */
     override fun isConfigurationFromContext(configuration: LivyConfiguration, context: ConfigurationContext): Boolean {
         // TODO check if this can be done via context.psiElement
-        val editors: Array<FileEditor> = FileEditorManager.getInstance(context.project).getSelectedEditors()
-        val textEditor: TextEditor = editors.get(0) as TextEditor
-        val caretModel: CaretModel = textEditor.editor.caretModel
-        val selectedText = caretModel.currentCaret.selectedText
-        return selectedText != null
+//        val editors: Array<FileEditor> = FileEditorManager.getInstance(context.project).getSelectedEditors()
+//        val textEditor: TextEditor = editors.get(0) as TextEditor
+//        val caretModel: CaretModel = textEditor.editor.caretModel
+//        val selectedText = caretModel.currentCaret.selectedText
+//        return selectedText != null
+        return true
     }
 
     override fun getConfigurationFactory(): ConfigurationFactory {
@@ -121,6 +123,7 @@ class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfigurat
     }
 
     override fun shouldReplace(self: ConfigurationFromContext, other: ConfigurationFromContext): Boolean {
-        return super.shouldReplace(self, other)
+        return true // TODO check
+        // return super.shouldReplace(self, other)
     }
 }

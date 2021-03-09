@@ -22,7 +22,8 @@ class LivyConfiguration(project: Project, factory: ConfigurationFactory, name: S
     var executorCores: Int = 3
     var numExecutors: Int = 2
     var sessionName: String = Settings.generateSessionName()
-    var statementTimeout: Int = 3600
+    var statementTimeout: Int = 36000
+    var showRawOutput: Boolean = false
     var sessionConfig: String =
         """{        
 "spark.kubernetes.executor.request.cores": "5",

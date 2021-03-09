@@ -5,12 +5,14 @@ import com.intellij.openapi.ui.LabeledComponent
 import com.intellij.openapi.ui.VerticalFlowLayout
 import com.intellij.ui.GuiUtils
 import com.intellij.ui.components.fields.ExpandableTextField
+import com.intellij.ui.layout.selected
 import com.intellij.util.Function
 import com.intellij.util.ui.UIUtil
 import org.tera.plugins.livy.Settings
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.util.stream.Collectors
+import javax.swing.JCheckBox
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JTextField
@@ -18,7 +20,7 @@ import javax.swing.JTextField
 /**
  * TODO options to add:
  * - certificate (option)
- * - checkbox: start new session/ or session id to use
+ * - checkbox: start new session/ or session id to use, disable other session fields when session id non empty
  */
 class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
     private val lineJoiner: Function<MutableList<String>, String> = Function<MutableList<String>, String>  { lines -> lines.stream().collect(Collectors.joining("\n")) }
@@ -61,6 +63,10 @@ class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
         GuiUtils.createUndoableTextField(),
         "Statement timeout (sec)"
     )
+    private val showRawOutputField: LabeledComponent<JCheckBox> = LabeledComponent.create(
+        JCheckBox(),
+        "Show Raw Output"
+    )
     private val codeField: LabeledComponent<ExpandableTextField> = LabeledComponent.create(
         ExpandableTextField(lineParser, lineJoiner),
         "Code"
@@ -72,7 +78,7 @@ class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
 
     override fun createEditor(): JComponent {
         myPanel.layout = VerticalFlowLayout(VerticalFlowLayout.MIDDLE, 0, 5, true, false)
-        myPanel.preferredSize = Dimension(500, 400)
+        myPanel.preferredSize = Dimension(500, 500)
 
         hostField.labelLocation = BorderLayout.WEST
         myPanel.add(hostField)
@@ -95,6 +101,8 @@ class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
         myPanel.add(numberExecutorsField)
         statementTimeoutField.labelLocation = BorderLayout.WEST
         myPanel.add(statementTimeoutField)
+        showRawOutputField.labelLocation = BorderLayout.WEST
+        myPanel.add(showRawOutputField)
 
         sessionConfigField.labelLocation = BorderLayout.WEST
         myPanel.add(sessionConfigField)
@@ -104,7 +112,7 @@ class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
         myPanel.updateUI()
 
         UIUtil.mergeComponentsWithAnchor(hostField, sessionIdField, sessionNameField, kindField, driverMemoryField,
-            executorMemoryField, executorCoresField, numberExecutorsField, sessionConfigField, codeField)
+            executorMemoryField, executorCoresField, numberExecutorsField, showRawOutputField, sessionConfigField, codeField)
 
         return myPanel
     }
@@ -119,6 +127,7 @@ class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
         executorCoresField.component.text = configuration.executorCores.toString()
         numberExecutorsField.component.text = configuration.numExecutors.toString()
         statementTimeoutField.component.text = configuration.statementTimeout.toString()
+        showRawOutputField.component.isSelected = configuration.showRawOutput
         codeField.component.text = configuration.code
         sessionConfigField.component.text = configuration.sessionConfig
     }
@@ -126,13 +135,14 @@ class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
     override fun applyEditorTo(configuration: LivyConfiguration) {
         configuration.host = hostField.component.text
         configuration.sessionId = idToInt(sessionIdField.component.text)
-        configuration.sessionName = sessionIdField.component.text
+        configuration.sessionName = sessionNameField.component.text
         configuration.kind = kindField.component.text
         configuration.driverMemory = driverMemoryField.component.text
         configuration.executorMemory = executorMemoryField.component.text
-        configuration.executorCores = executorCoresField.component.text.toInt()
-        configuration.numExecutors = numberExecutorsField.component.text.toInt()
-        configuration.statementTimeout = statementTimeoutField.component.text.toInt()
+        executorCoresField.component.text.run { if (this.isNotBlank()) configuration.executorCores = this.toInt() }
+        numberExecutorsField.component.text.run { if (this.isNotBlank()) configuration.numExecutors = this.toInt() }
+        statementTimeoutField.component.text.run { if (this.isNotBlank()) configuration.statementTimeout = this.toInt() }
+        configuration.showRawOutput = showRawOutputField.component.isSelected
         configuration.code = codeField.component.text
         configuration.sessionConfig = sessionConfigField.component.text
 

@@ -88,6 +88,8 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
                     logText("Using existing session $sessionId\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
                 }
 
+                logText("Executing statements ..\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
+
                 executeStatement(config, host, sessionId, client, myProgress)
 
                 notifyProcessTerminated(0)
@@ -127,6 +129,9 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
 
         val response = post(client, url, payload.toString())
         var result = response.body!!.string()
+        if (config.showRawOutput) {
+            logText(result + "\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
+        }
 
         val callback = response.header("location")
         val callbackUrl = "$host$callback"
@@ -148,6 +153,9 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
             client.newCall(request).execute().use { response ->
                 succes = response.isSuccessful
                 val responseText = response.body!!.string()
+                if (config.showRawOutput) {
+                    logText(responseText + "\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
+                }
                 val jsonObject = JSONObject(responseText)
                 val state = jsonObject.getString("state")
                 val progress = jsonObject.getDouble("progress")
@@ -172,7 +180,11 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
             } else {
                 val error = jsonObject.getJSONObject("output").getString("evalue")
 
-                logText(error, ConsoleViewContentType.LOG_ERROR_OUTPUT)
+                logText("Error:\n$error\n\n", ConsoleViewContentType.LOG_ERROR_OUTPUT)
+
+                val traceback = jsonObject.getJSONObject("output").getString("traceback")
+
+                logText(traceback + "\n", ConsoleViewContentType.LOG_ERROR_OUTPUT)
             }
             myProgress?.let { it.text = "Statement Finished" }
         } else {
