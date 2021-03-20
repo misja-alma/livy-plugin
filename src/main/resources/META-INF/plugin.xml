@@ -12,5 +12,8 @@
         <runConfigurationProducer implementation="org.tera.plugins.livy.run.LivyRunConfigurationProducer"/>
         <toolWindow id="Livy Sessions" secondary="true" icon="AllIcons.Actions.ArrowExpand" anchor="bottom"
                     factoryClass="org.tera.plugins.livy.sessions.SessionsPanelFactory"/>
+        <applicationConfigurable parentId="tools" instance="org.tera.plugins.livy.settings.LivyAppSettingsConfigurable"
+                             id="org.tera.plugin.Livy.LivyAppSettingsConfigurable" displayName="Livy Settings"/>
+        <applicationService serviceImplementation="org.tera.plugins.livy.settings.AppSettingsState"/>
     </extensions>
 </idea-plugin>

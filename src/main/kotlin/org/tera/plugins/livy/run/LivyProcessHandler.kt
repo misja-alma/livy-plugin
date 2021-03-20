@@ -17,7 +17,7 @@ import okhttp3.Response
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.annotations.Nullable
 import org.json.JSONObject
-import org.tera.plugins.livy.Settings
+import org.tera.plugins.livy.settings.Settings
 import org.tera.plugins.livy.Utils
 import java.io.OutputStream
 import kotlin.math.roundToInt
@@ -179,12 +179,10 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
                 logText(data + "\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
             } else {
                 val error = jsonObject.getJSONObject("output").getString("evalue")
-
                 logText("Error:\n$error\n\n", ConsoleViewContentType.LOG_ERROR_OUTPUT)
 
-                val traceback = jsonObject.getJSONObject("output").getString("traceback")
-
-                logText(traceback + "\n", ConsoleViewContentType.LOG_ERROR_OUTPUT)
+                val traceback = jsonObject.getJSONObject("output").get("traceback") // can be a string or an array ..
+                logText(traceback.toString() + "\n", ConsoleViewContentType.LOG_ERROR_OUTPUT)
             }
             myProgress?.let { it.text = "Statement Finished" }
         } else {

@@ -5,10 +5,10 @@ import com.intellij.openapi.ui.LabeledComponent
 import com.intellij.openapi.ui.VerticalFlowLayout
 import com.intellij.ui.GuiUtils
 import com.intellij.ui.components.fields.ExpandableTextField
-import com.intellij.ui.layout.selected
 import com.intellij.util.Function
 import com.intellij.util.ui.UIUtil
-import org.tera.plugins.livy.Settings
+import org.tera.plugins.livy.settings.AppSettingsState
+import org.tera.plugins.livy.settings.Settings
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.util.stream.Collectors
@@ -147,7 +147,7 @@ class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
         configuration.sessionConfig = sessionConfigField.component.text
 
         Settings.activeSession = configuration.sessionId
-        Settings.activeHost = configuration.host
+        AppSettingsState.instance.livyHost = configuration.host
     }
 
     private fun idToString(id: Int?): String {

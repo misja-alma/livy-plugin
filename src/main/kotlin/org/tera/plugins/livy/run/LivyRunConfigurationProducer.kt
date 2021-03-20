@@ -1,20 +1,15 @@
 package org.tera.plugins.livy.run
 
-import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.actions.ConfigurationFromContext
 import com.intellij.execution.actions.LazyRunConfigurationProducer
 import com.intellij.execution.configurations.ConfigurationFactory
-import com.intellij.execution.configurations.RunConfiguration
-import com.intellij.execution.impl.RunManagerImpl
-import com.intellij.openapi.editor.CaretModel
-import com.intellij.openapi.fileEditor.FileEditor
-import com.intellij.openapi.fileEditor.FileEditorManager
-import com.intellij.openapi.fileEditor.TextEditor
+import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
-import org.tera.plugins.livy.Settings
+import org.tera.plugins.livy.settings.AppSettingsState
+import org.tera.plugins.livy.settings.Settings
 
 /**
  * The class responsible for showing the 'Run Livy Session ..' option in the action menu
@@ -49,52 +44,61 @@ class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfigurat
         context: ConfigurationContext
     ): Boolean {
 
-        // TODO check if this can be done via context.psiElement, that might be faster
-        val editors: Array<FileEditor> = FileEditorManager.getInstance(context.project).getSelectedEditors()
-        val textEditor: TextEditor = editors.get(0) as TextEditor
-        val caretModel: CaretModel = textEditor.editor.caretModel
-        var selectedText = caretModel.currentCaret.selectedText
+        // TODO check that the context.psiElement really refers to the selected text
+        // TODO 2 the original code works everywhere, the one from the context.dataContext only in the sidebar ...
+//        val editors: Array<FileEditor> = FileEditorManager.getInstance(context.project).selectedEditors
+//        val textEditor: TextEditor = editors.get(0) as TextEditor
+//        val caretModel: CaretModel = textEditor.editor.caretModel
+//        var selectedText = caretModel.currentCaret.selectedText
+        // -> Maybe just check if user clicked somewhere inside the editor and use the original selected text method
+        // TODO or override createConfigurationFromContext and return Context subclass that overrides getConfigurationsFromContext, so non-strict can be used?
+        val editor = CommonDataKeys.EDITOR.getData(context.dataContext)
+        var selectedText = editor?.caretModel?.currentCaret?.selectedText
         if (selectedText == null) {
             selectedText = ""
         }
+        // TODO this element always seems to be the position of the cursor. So not the run icon in the sidebar.
+        //      so this way we can't check where the mouse is hovering ..
+        val element: PsiElement? = context.psiLocation
 
         configuration.code = selectedText
         if (Settings.activeSession != null) {
             configuration.name = "Livy session " + Settings.activeSession
         } else {
-            configuration.setName("New Livy session")
+            configuration.name = "New Livy session"
         }
 
         configuration.sessionId = Settings.activeSession
-        configuration.host = Settings.activeHost
+        configuration.host = AppSettingsState.instance.livyHost
 
         return true
     }
 
-    /**
-     * The idea is to always use the same run configuration regardless if the selected text changed. So we
-     * only check that any text is selected at all.
-     * As an alternative we could check if the selected text changed, maybe we could make this configurable.
-     */
     override fun isConfigurationFromContext(configuration: LivyConfiguration, context: ConfigurationContext): Boolean {
-        // TODO check if this can be done via context.psiElement
-//        val editors: Array<FileEditor> = FileEditorManager.getInstance(context.project).getSelectedEditors()
-//        val textEditor: TextEditor = editors.get(0) as TextEditor
-//        val caretModel: CaretModel = textEditor.editor.caretModel
-//        val selectedText = caretModel.currentCaret.selectedText
-//        return selectedText != null
-        return true
+        // TODO check that the context.psiElement really refers to the selected text
+//        // TODO 2 the original code works everywhere, the one from the context.dataContext only in the sidebar ...
+        val editor = CommonDataKeys.EDITOR.getData(context.dataContext)
+        val selectedText = editor?.caretModel?.currentCaret?.selectedText
+//
+////        val editors: Array<FileEditor> = FileEditorManager.getInstance(context.project).getSelectedEditors()
+////        val textEditor: TextEditor = editors.get(0) as TextEditor
+////        val caretModel: CaretModel = textEditor.editor.caretModel
+////        val selectedText = caretModel.currentCaret.selectedText
+        return selectedText != null
+      //  return (context.configuration?.configuration is LivyConfiguration) && (context.configuration?.configuration as LivyConfiguration).sessionId == configuration.sessionId
     }
 
     override fun getConfigurationFactory(): ConfigurationFactory {
         return configFactory
     }
 
+    /**
+     * Let any other runConfiguration take precedence
+     */
     override fun isPreferredConfiguration(self: ConfigurationFromContext?, other: ConfigurationFromContext?): Boolean {
         if (self == null) return false
         if (other == null) return true
         return self.configuration !is LivyConfiguration
-        // Trying to let other configs always take precedence. Maybe make this configurable?
     }
 
     override fun findExistingConfiguration(context: ConfigurationContext): RunnerAndConfigurationSettings? {
@@ -106,24 +110,9 @@ class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfigurat
         return result
     }
 
-    override fun findOrCreateConfigurationFromContext(context: ConfigurationContext): ConfigurationFromContext? {
-        return super.findOrCreateConfigurationFromContext(context)
-    }
-
-    override fun getConfigurationSettingsList(runManager: RunManager): MutableList<RunnerAndConfigurationSettings> {
-        return super.getConfigurationSettingsList(runManager)
-    }
-
-    override fun onFirstRun(
-        configuration: ConfigurationFromContext,
-        context: ConfigurationContext,
-        startRunnable: Runnable
-    ) {
-        super.onFirstRun(configuration, context, startRunnable)
-    }
-
-    override fun shouldReplace(self: ConfigurationFromContext, other: ConfigurationFromContext): Boolean {
-        return true // TODO check
-        // return super.shouldReplace(self, other)
+    private fun ultimateAncestor(element: PsiElement): PsiElement {
+        var ancestor = element
+        while (ancestor.parent != null) ancestor = ancestor.parent
+        return ancestor
     }
 }

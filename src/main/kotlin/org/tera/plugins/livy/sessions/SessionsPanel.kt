@@ -4,15 +4,15 @@ import com.intellij.notification.Notification
 import com.intellij.notification.NotificationType
 import com.intellij.notification.Notifications
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.wm.ToolWindow
 import com.intellij.ui.components.JBScrollPane
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.jdesktop.swingx.JXTable
 import org.json.JSONArray
 import org.json.JSONObject
-import org.tera.plugins.livy.Settings
+import org.tera.plugins.livy.settings.Settings
 import org.tera.plugins.livy.Utils
+import org.tera.plugins.livy.settings.AppSettingsState
 import java.awt.BorderLayout
 import java.awt.FlowLayout
 import java.awt.event.ActionEvent
@@ -68,7 +68,7 @@ class SessionsPanel() {
         val deleteAction = Runnable {
             selectedSessions.forEach { deleteThis ->
                 deleteThis.run {
-                    Utils.deleteSession(client, Settings.activeHost, deleteThis)
+                    Utils.deleteSession(client, AppSettingsState.instance.livyHost, deleteThis)
                     if (Settings.activeSession == this) Settings.activeSession = null
                 }
             }
@@ -81,7 +81,7 @@ class SessionsPanel() {
 
     private fun refresh(): Boolean {
         val request = Request.Builder()
-            .url(Settings.activeHost + "/sessions")
+            .url(AppSettingsState.instance.livyHost + "/sessions")
             .get()
             .build()
 

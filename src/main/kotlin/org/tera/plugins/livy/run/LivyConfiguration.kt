@@ -6,13 +6,14 @@ import com.intellij.execution.configurations.LocatableConfigurationBase
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
-import org.tera.plugins.livy.Settings
+import org.tera.plugins.livy.settings.AppSettingsState
+import org.tera.plugins.livy.settings.Settings
 
 class LivyConfiguration(project: Project, factory: ConfigurationFactory, name: String?) : LocatableConfigurationBase<LivyOptions>(project, factory, name) {
     companion object {
         val defaultName = "Livy"
     }
-    var host: String = Settings.activeHost
+    var host: String = AppSettingsState.instance.livyHost
     var sessionId: Int? = Settings.activeSession
     var code: String = ""
     // TODO maybe simply always store last configuration and copy its values
@@ -21,7 +22,7 @@ class LivyConfiguration(project: Project, factory: ConfigurationFactory, name: S
     var executorMemory: String = "15G"
     var executorCores: Int = 3
     var numExecutors: Int = 2
-    var sessionName: String = Settings.generateSessionName()
+    var sessionName: String = AppSettingsState.instance.generateSessionName()
     var statementTimeout: Int = 36000
     var showRawOutput: Boolean = false
     var sessionConfig: String =
