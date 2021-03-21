@@ -7,14 +7,13 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
 import org.tera.plugins.livy.settings.AppSettingsState
-import org.tera.plugins.livy.settings.Settings
 
 class LivyConfiguration(project: Project, factory: ConfigurationFactory, name: String?) : LocatableConfigurationBase<LivyOptions>(project, factory, name) {
     companion object {
         val defaultName = "Livy"
     }
     var host: String = AppSettingsState.instance.livyHost
-    var sessionId: Int? = Settings.activeSession
+    var sessionId: Int? = AppSettingsState.activeSession
     var code: String = ""
     // TODO maybe simply always store last configuration and copy its values
     var kind: String = "spark"

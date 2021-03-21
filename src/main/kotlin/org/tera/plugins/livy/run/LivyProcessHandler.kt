@@ -1,6 +1,9 @@
 package org.tera.plugins.livy.run
 
+import com.intellij.execution.RunnerAndConfigurationSettings
+import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.impl.RunManagerImpl
+import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.notification.NotificationType
@@ -17,8 +20,8 @@ import okhttp3.Response
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.annotations.Nullable
 import org.json.JSONObject
-import org.tera.plugins.livy.settings.Settings
 import org.tera.plugins.livy.Utils
+import org.tera.plugins.livy.settings.AppSettingsState
 import java.io.OutputStream
 import kotlin.math.roundToInt
 
@@ -44,7 +47,7 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
         )
     }
 
-    fun post(client: OkHttpClient, url: String, postBody: String): Response {
+    private fun post(client: OkHttpClient, url: String, postBody: String): Response {
         return Utils.post(client, url, postBody) { text: String, type: ConsoleViewContentType -> logText(text, type) }
     }
 
@@ -74,7 +77,7 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
                         if (config.name == LivyConfiguration.defaultName) {
                             config.name = "${LivyConfiguration.defaultName} $sessionId"
                         }
-                        Settings.activeSession = sessionId
+                        AppSettingsState.activeSession = sessionId
                         config.sessionId = sessionId
                     } else {
                         logText("Could not start new Livy session", ConsoleViewContentType.LOG_ERROR_OUTPUT)
@@ -82,7 +85,7 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
                         return
                     }
 
-                    updateRunconfiguration(project, oldSessionName)
+                    updateRunConfiguration(project, oldSessionName, config)
                 } else {
                     // TODO we could still check here that the old session is not dead
                     logText("Using existing session $sessionId\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
@@ -99,20 +102,23 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
         ProgressManager.getInstance().run(task)
     }
 
-    private fun updateRunconfiguration(
+    private fun updateRunConfiguration(
         project: Project,
-        oldSessionName: @NotNull String
+        oldSessionName: @NotNull String,
+        newConfig: RunConfiguration,
     ) {
         val runManager = RunManagerImpl.getInstanceImpl(project)
-        val runConfig = runManager.findConfigurationByName(oldSessionName)
-        if (runConfig != null) {
+        val oldRunConfig: RunnerAndConfigurationSettings? = runManager.findConfigurationByName(oldSessionName)
+        if (oldRunConfig != null) {
             // TODO this sometimes takes effect really late ..
             // This is probably because the below method should be called when there is really a new runconfig!
             // In our case the run config is the same, and this is checked in the Idea UI
-            runManager.clearAll()
-            runManager.addConfiguration(runConfig)
-            runManager.fireRunConfigurationChanged(runConfig)
+            runManager.removeConfiguration(oldRunConfig)
+            runManager.fireRunConfigurationChanged(oldRunConfig)
         }
+        val newRunConfig = RunnerAndConfigurationSettingsImpl(runManager, newConfig)
+        runManager.addConfiguration(newRunConfig)
+        runManager.fireRunConfigurationChanged(newRunConfig)
     }
 
     private fun executeStatement(

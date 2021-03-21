@@ -14,6 +14,7 @@ import com.intellij.util.xmlb.XmlSerializerUtil
  */
 @State(name = "org.tera.plugins.livy.settings.AppSettingsState", storages = [Storage("LivyPlugin.xml")])
 class AppSettingsState : PersistentStateComponent<AppSettingsState?> {
+
     var livyHost = "https://livy-dev.service.ckd.dns.teralytics.net"
     var sessionPrefix = "${System.getProperty("user.name")}_idea"
 
@@ -31,6 +32,8 @@ class AppSettingsState : PersistentStateComponent<AppSettingsState?> {
     }
 
     companion object {
+        var activeSession: Int? = null
+
         val instance: AppSettingsState
             get() = ServiceManager.getService(AppSettingsState::class.java)
     }

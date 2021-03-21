@@ -8,7 +8,6 @@ import com.intellij.ui.components.fields.ExpandableTextField
 import com.intellij.util.Function
 import com.intellij.util.ui.UIUtil
 import org.tera.plugins.livy.settings.AppSettingsState
-import org.tera.plugins.livy.settings.Settings
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.util.stream.Collectors
@@ -21,6 +20,7 @@ import javax.swing.JTextField
  * TODO options to add:
  * - certificate (option)
  * - checkbox: start new session/ or session id to use, disable other session fields when session id non empty
+ * - note that the session name can only be edited when creating a new session!
  */
 class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
     private val lineJoiner: Function<MutableList<String>, String> = Function<MutableList<String>, String>  { lines -> lines.stream().collect(Collectors.joining("\n")) }
@@ -146,7 +146,7 @@ class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
         configuration.code = codeField.component.text
         configuration.sessionConfig = sessionConfigField.component.text
 
-        Settings.activeSession = configuration.sessionId
+        AppSettingsState.activeSession = configuration.sessionId
         AppSettingsState.instance.livyHost = configuration.host
     }
 

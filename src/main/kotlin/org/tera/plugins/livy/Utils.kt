@@ -66,7 +66,10 @@ object Utils {
                     val result = response.body!!.string()
                     log.debug(result)
                     if (!response.isSuccessful) {
+                        logText(result + "\n", ConsoleViewContentType.LOG_ERROR_OUTPUT)
                         return null
+                    } else {
+                        log.debug(result)
                     }
 
                     val sessionLocation = response.header("location")!!
@@ -104,6 +107,7 @@ object Utils {
                 session.toInt()
             } else {
                 if (!isCanceled()) {
+                    logText(result + "\n", ConsoleViewContentType.LOG_ERROR_OUTPUT)
                     myProgress?.let { it.text = "Error while starting session" }
                 }
                 null

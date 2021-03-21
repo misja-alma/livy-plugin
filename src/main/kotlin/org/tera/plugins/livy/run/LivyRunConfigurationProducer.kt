@@ -9,7 +9,6 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
 import org.tera.plugins.livy.settings.AppSettingsState
-import org.tera.plugins.livy.settings.Settings
 
 /**
  * The class responsible for showing the 'Run Livy Session ..' option in the action menu
@@ -62,13 +61,13 @@ class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfigurat
         val element: PsiElement? = context.psiLocation
 
         configuration.code = selectedText
-        if (Settings.activeSession != null) {
-            configuration.name = "Livy session " + Settings.activeSession
+        if (AppSettingsState.activeSession != null) {
+            configuration.name = "Livy session " + AppSettingsState.activeSession
         } else {
             configuration.name = "New Livy session"
         }
 
-        configuration.sessionId = Settings.activeSession
+        configuration.sessionId = AppSettingsState.activeSession
         configuration.host = AppSettingsState.instance.livyHost
 
         return true

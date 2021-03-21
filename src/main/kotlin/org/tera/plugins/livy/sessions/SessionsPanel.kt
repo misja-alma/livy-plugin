@@ -10,7 +10,6 @@ import okhttp3.Request
 import org.jdesktop.swingx.JXTable
 import org.json.JSONArray
 import org.json.JSONObject
-import org.tera.plugins.livy.settings.Settings
 import org.tera.plugins.livy.Utils
 import org.tera.plugins.livy.settings.AppSettingsState
 import java.awt.BorderLayout
@@ -69,7 +68,7 @@ class SessionsPanel() {
             selectedSessions.forEach { deleteThis ->
                 deleteThis.run {
                     Utils.deleteSession(client, AppSettingsState.instance.livyHost, deleteThis)
-                    if (Settings.activeSession == this) Settings.activeSession = null
+                    if (AppSettingsState.activeSession == this) AppSettingsState.activeSession = null
                 }
             }
         }
