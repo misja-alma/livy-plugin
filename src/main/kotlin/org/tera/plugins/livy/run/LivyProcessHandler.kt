@@ -80,7 +80,7 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
                                 runManager.removeConfiguration(oldRunConfig)
                             }
 
-                            config.name = "${LivyConfiguration.defaultName} $sessionId"
+                            config.name = "Livy Session $sessionId"
                         }
                         AppSettingsState.activeSession = sessionId
                         config.sessionId = sessionId

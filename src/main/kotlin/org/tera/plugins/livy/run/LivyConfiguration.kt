@@ -6,6 +6,7 @@ import com.intellij.execution.configurations.LocatableConfigurationBase
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
+import org.jdom.Element
 import org.tera.plugins.livy.settings.AppSettingsState
 
 class LivyConfiguration(project: Project, factory: ConfigurationFactory, name: String?) : LocatableConfigurationBase<LivyOptions>(project, factory, name) {
@@ -15,7 +16,6 @@ class LivyConfiguration(project: Project, factory: ConfigurationFactory, name: S
     var host: String = AppSettingsState.instance.livyHost
     var sessionId: Int? = AppSettingsState.activeSession
     var code: String = ""
-    // TODO maybe simply always store last configuration and copy its values
     var kind: String = "spark"
     var driverMemory: String = "20G"
     var executorMemory: String = "15G"
@@ -46,6 +46,40 @@ class LivyConfiguration(project: Project, factory: ConfigurationFactory, name: S
 
     override fun suggestedName(): String {
         return if (sessionId == null) defaultName else "Livy Session $sessionId"
+    }
+
+    override fun readExternal(element: Element) {
+        super<LocatableConfigurationBase>.readExternal(element)
+
+        element.getAttributeValue("host")?.let { host = it }
+        element.getAttributeValue("sessionId")?.let { sessionId = it.toInt() }
+        element.getAttributeValue("code")?.let { code = it }
+        element.getAttributeValue("kind")?.let { kind = it }
+        element.getAttributeValue("driverMemory")?.let { driverMemory = it }
+        element.getAttributeValue("executorMemory")?.let { executorMemory = it }
+        element.getAttributeValue("executorCores")?.let { executorCores = it.toInt() }
+        element.getAttributeValue("numExecutors")?.let { numExecutors = it.toInt() }
+        element.getAttributeValue("sessionName")?.let { sessionName = it }
+        element.getAttributeValue("statementTimeout")?.let { statementTimeout = it.toInt() }
+        element.getAttributeValue("showRawOutput")?.let { showRawOutput = it.toBoolean() }
+        element.getAttributeValue("sessionConfig")?.let { sessionConfig = it }
+    }
+
+    override fun writeExternal(element: Element) {
+        element.setAttribute("sessionName", host)
+        sessionId?.let { element.setAttribute("sessionId", it.toString()) }
+        element.setAttribute("code", code)
+        element.setAttribute("kind", kind)
+        element.setAttribute("driverMemory", driverMemory)
+        element.setAttribute("executorMemory", executorMemory)
+        element.setAttribute("executorCores", executorCores.toString())
+        element.setAttribute("numExecutors", numExecutors.toString())
+        element.setAttribute("sessionName", sessionName)
+        element.setAttribute("statementTimeout", statementTimeout.toString())
+        element.setAttribute("showRawOutput", showRawOutput.toString())
+        element.setAttribute("sessionConfig", sessionConfig)
+
+        super<LocatableConfigurationBase>.writeExternal(element)
     }
 }
 
