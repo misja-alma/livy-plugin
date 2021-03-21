@@ -58,16 +58,11 @@ class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfigurat
         }
         // TODO this element always seems to be the position of the cursor. So not the run icon in the sidebar.
         //      so this way we can't check where the mouse is hovering ..
-        val element: PsiElement? = context.psiLocation
+        //val element: PsiElement? = context.psiLocation
 
         configuration.code = selectedText
-        if (AppSettingsState.activeSession != null) {
-            configuration.name = "Livy session " + AppSettingsState.activeSession
-        } else {
-            configuration.name = "New Livy session"
-        }
-
         configuration.sessionId = AppSettingsState.activeSession
+        configuration.name = configuration.suggestedName()
         configuration.host = AppSettingsState.instance.livyHost
 
         return true

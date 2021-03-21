@@ -17,7 +17,6 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
-import org.jetbrains.annotations.NotNull
 import org.jetbrains.annotations.Nullable
 import org.json.JSONObject
 import org.tera.plugins.livy.Utils
@@ -72,9 +71,15 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
 
                 if (sessionId == null) {
                     sessionId = startLivySession(client, config)
-                    val oldSessionName = config.name
+
                     if (sessionId != null) {
                         if (config.name == LivyConfiguration.defaultName) {
+                            val runManager = RunManagerImpl.getInstanceImpl(project)
+                            val oldRunConfig: RunnerAndConfigurationSettings? = runManager.findConfigurationByName(LivyConfiguration.defaultName)
+                            if (oldRunConfig != null) {
+                                runManager.removeConfiguration(oldRunConfig)
+                            }
+
                             config.name = "${LivyConfiguration.defaultName} $sessionId"
                         }
                         AppSettingsState.activeSession = sessionId
@@ -85,7 +90,7 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
                         return
                     }
 
-                    updateRunConfiguration(project, oldSessionName, config)
+                    updateRunConfiguration(project, config)
                 } else {
                     // TODO we could still check here that the old session is not dead
                     logText("Using existing session $sessionId\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
@@ -104,21 +109,15 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
 
     private fun updateRunConfiguration(
         project: Project,
-        oldSessionName: @NotNull String,
         newConfig: RunConfiguration,
     ) {
         val runManager = RunManagerImpl.getInstanceImpl(project)
-        val oldRunConfig: RunnerAndConfigurationSettings? = runManager.findConfigurationByName(oldSessionName)
-        if (oldRunConfig != null) {
-            // TODO this sometimes takes effect really late ..
-            // This is probably because the below method should be called when there is really a new runconfig!
-            // In our case the run config is the same, and this is checked in the Idea UI
-            runManager.removeConfiguration(oldRunConfig)
-            runManager.fireRunConfigurationChanged(oldRunConfig)
-        }
         val newRunConfig = RunnerAndConfigurationSettingsImpl(runManager, newConfig)
         runManager.addConfiguration(newRunConfig)
         runManager.fireRunConfigurationChanged(newRunConfig)
+        // TODO this sometimes takes effect really late or not at all ..
+        // This is probably because the below method should be called when there is really a new runconfig!
+        // In our case the run config is the same, and this is checked in the Idea UI
     }
 
     private fun executeStatement(

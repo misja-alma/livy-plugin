@@ -10,7 +10,7 @@ import org.tera.plugins.livy.settings.AppSettingsState
 
 class LivyConfiguration(project: Project, factory: ConfigurationFactory, name: String?) : LocatableConfigurationBase<LivyOptions>(project, factory, name) {
     companion object {
-        val defaultName = "Livy"
+        val defaultName = "New Livy Session"
     }
     var host: String = AppSettingsState.instance.livyHost
     var sessionId: Int? = AppSettingsState.activeSession
@@ -45,7 +45,7 @@ class LivyConfiguration(project: Project, factory: ConfigurationFactory, name: S
     }
 
     override fun suggestedName(): String {
-        return "$defaultName $sessionId"
+        return if (sessionId == null) defaultName else "Livy Session $sessionId"
     }
 }
 
