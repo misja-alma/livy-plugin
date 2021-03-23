@@ -60,6 +60,9 @@ class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfigurat
         //      so this way we can't check where the mouse is hovering ..
         //val element: PsiElement? = context.psiLocation
 
+        // or use this as the getSourceElement?
+        //sourceFile = location.getPsiElement().getContainingFile();
+
         configuration.code = selectedText
         configuration.sessionId = AppSettingsState.activeSession
         configuration.name = configuration.suggestedName()

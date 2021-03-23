@@ -3,6 +3,7 @@ package org.tera.plugins.livy.run
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.LocatableConfigurationBase
+import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
@@ -66,7 +67,7 @@ class LivyConfiguration(project: Project, factory: ConfigurationFactory, name: S
     }
 
     override fun writeExternal(element: Element) {
-        element.setAttribute("sessionName", host)
+        element.setAttribute("host", host)
         sessionId?.let { element.setAttribute("sessionId", it.toString()) }
         element.setAttribute("code", code)
         element.setAttribute("kind", kind)
@@ -80,6 +81,13 @@ class LivyConfiguration(project: Project, factory: ConfigurationFactory, name: S
         element.setAttribute("sessionConfig", sessionConfig)
 
         super<LocatableConfigurationBase>.writeExternal(element)
+    }
+
+    override fun clone(): RunConfiguration {
+        val result = super.clone() as LivyConfiguration
+        // Make sure new sessions get a unique session name
+        if (result.sessionId == null) result.sessionName = AppSettingsState.instance.generateSessionName()
+        return result
     }
 }
 

@@ -17,4 +17,9 @@ class LivyConfigurationFactory : ConfigurationFactory(LivyConfigurationType()) {
     override fun getId(): String {
         return "Livy Configuration Factory"
     }
+
+    override fun createConfiguration(name: String?, template: RunConfiguration): RunConfiguration {
+        val result = LivyConfiguration(template.project, this, name)
+        return result
+    }
 }
