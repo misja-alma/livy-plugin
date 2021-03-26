@@ -54,7 +54,8 @@ class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfigurat
         val editor = CommonDataKeys.EDITOR.getData(context.dataContext)
         var selectedText = editor?.caretModel?.currentCaret?.selectedText
         if (selectedText == null) {
-            selectedText = ""
+            //selectedText = ""
+            return false
         }
         // TODO this element always seems to be the position of the cursor. So not the run icon in the sidebar.
         //      so this way we can't check where the mouse is hovering ..

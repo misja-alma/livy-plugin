@@ -21,7 +21,7 @@ val pluginGroup: String by project
 // Read more about the issue: https://github.com/JetBrains/intellij-platform-plugin-template/issues/29
 val pluginName_: String by project
 val pluginVersion: String by project
-val pluginSinceBuild: String by project
+val pluginSinceBuild: String = "172.4574.19"
 val pluginUntilBuild: String by project
 val pluginVerifierIdeVersions: String by project
 

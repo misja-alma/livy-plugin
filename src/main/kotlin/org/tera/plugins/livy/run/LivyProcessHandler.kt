@@ -21,6 +21,7 @@ import org.jetbrains.annotations.Nullable
 import org.json.JSONObject
 import org.tera.plugins.livy.Utils
 import org.tera.plugins.livy.settings.AppSettingsState
+import java.io.IOException
 import java.io.OutputStream
 import kotlin.math.roundToInt
 
@@ -155,23 +156,28 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
                 .get()
                 .build()
 
-            client.newCall(request).execute().use { response ->
-                succes = response.isSuccessful
-                val responseText = response.body!!.string()
-                if (config.showRawOutput) {
-                    logText(responseText + "\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
+            try {
+                client.newCall(request).execute().use { response ->
+                    succes = response.isSuccessful
+                    val responseText = response.body!!.string()
+                    if (config.showRawOutput) {
+                        logText(responseText + "\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
+                    }
+                    val jsonObject = JSONObject(responseText)
+                    val state = jsonObject.getString("state")
+                    val progress = jsonObject.getDouble("progress")
+                    if (!succes && jsonObject.has("output")) {
+                        // log intermediary output. Seems to never to contain anything though.
+                        logText(jsonObject.get("output").toString() + "\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
+                    }
+                    myProgress?.fraction = progress
+                    WindowManager.getInstance().getStatusBar(myProject).info =
+                        state + ", progress: " + ((progress * 100).roundToInt()) + "%"
+                    result = responseText
                 }
-                val jsonObject = JSONObject(responseText)
-                val state = jsonObject.getString("state")
-                val progress = jsonObject.getDouble("progress")
-                if (!succes && jsonObject.has("output")) {
-                    // log intermediary output. Seems to never to contain anything though.
-                    logText(jsonObject.get("output").toString() + "\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
-                }
-                myProgress?.fraction = progress
-                WindowManager.getInstance().getStatusBar(myProject).info =
-                    state + ", progress: " + ((progress * 100).roundToInt()) + "%"
-                result = responseText
+            } catch (ex: IOException) {
+                // log the error but don't stop polling, the connection could simply have a hick-up
+                Utils.eventLog("Connection error", ex.message!!, NotificationType.ERROR)
             }
         }
 

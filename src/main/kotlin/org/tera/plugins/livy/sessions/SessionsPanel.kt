@@ -26,7 +26,7 @@ import javax.swing.table.DefaultTableModel
  */
 class SessionsPanel() {
     private val refreshToolWindowButton: JButton = JButton("Refresh")
-    private val columnNames = Vector(listOf("Id", "Name", "State", "AppId", "SparkUIUrl"))
+    private val columnNames = Vector(listOf("Id", "Name", "State", "AppId", "Spark UI", "Log"))
     private val deleteToolWindowButton: JButton = JButton("Delete Session")
     private val sessionsModel = object : DefaultTableModel(columnNames, 0) {
         override fun setValueAt(aValue: Any?, row: Int, column: Int) {
@@ -107,7 +107,8 @@ class SessionsPanel() {
                         val name = jsonObject.optString("name")
                         val appId = jsonObject.optString("appId")
                         val sparkUIUrl = jsonObject.optJSONObject("appInfo")?.optString("sparkUiUrl")
-                        Session(id, name, state, appId, sparkUIUrl)
+                        val log = "https://livy-dev.service.ckd.dns.teralytics.net/ui/session/$id/log"
+                        Session(id, name, state, appId, sparkUIUrl, log)
                     }
 
                     sessionsModel.setDataVector(toRows(sessions), columnNames)
@@ -137,6 +138,7 @@ class SessionsPanel() {
         row.add(session.state)
         row.add(session.appId)
         row.add(session.sparkUIUrl)
+        row.add(session.log)
         return row
     }
 }
