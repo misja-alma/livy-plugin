@@ -19,7 +19,7 @@ import javax.swing.JPanel
 import javax.swing.JTextField
 
 /**
- * TODO options to add:
+ * TODO field to add:
  * - host certificate (option)
  */
 class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
@@ -85,12 +85,12 @@ class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
         myPanel.add(newSessionRadioButton)
         myPanel.add(existingSessionRadioButton)
 
-        hostField.labelLocation = BorderLayout.WEST
-        myPanel.add(hostField)
         sessionIdField.labelLocation = BorderLayout.WEST
         myPanel.add(sessionIdField)
         sessionNameField.labelLocation = BorderLayout.WEST
         myPanel.add(sessionNameField)
+        hostField.labelLocation = BorderLayout.WEST
+        myPanel.add(hostField)
 
         kindField.setLabelLocation(BorderLayout.WEST)
         myPanel.add(kindField)
@@ -178,7 +178,7 @@ class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
         UIUtil.setEnabled(sessionConfigField, newSessionRadioButton == source, true)
 
         existingSessionRadioButton.isSelected = existingSessionRadioButton == source
-        UIUtil.setEnabled(sessionIdField, existingSessionRadioButton == source, true)
+        sessionIdField.isVisible = (existingSessionRadioButton == source)
     }
 
     private fun idToString(id: Int?): String {

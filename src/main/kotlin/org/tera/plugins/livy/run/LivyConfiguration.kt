@@ -25,6 +25,7 @@ class LivyConfiguration(project: Project, factory: ConfigurationFactory, name: S
     var sessionName: String = AppSettingsState.instance.generateSessionName()
     var statementTimeout: Int = 36000
     var showRawOutput: Boolean = false
+    // TODO remove hardcoded default from git somehow. Maybe have these in a file not managed by git
     var sessionConfig: String =
         """{        
 "spark.kubernetes.executor.request.cores": "5",

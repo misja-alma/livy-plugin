@@ -29,8 +29,8 @@ class LivyConfigurationType : ConfigurationType {
     }
 
     override fun isManaged(): Boolean {
-        // TODO but because this is false, user can't change it!
-        // TODO was Overridden to prevent that name change affects config id. This goes together with the getId override in LivyConfiguration
+        // Note but because this is false, user can't change the name.
+        // Overridden to prevent that name change affects config id. This goes together with the getId override in LivyConfiguration
         // Now that it is true, the effect is that a new config that changes to config for session, is not selected in the run configs dropdown
         // Apparently for managed (i.e. user defined) names, Idea tries to find the runconfig by name in the dropdown
         return true

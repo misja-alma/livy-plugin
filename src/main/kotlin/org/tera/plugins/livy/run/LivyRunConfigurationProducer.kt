@@ -19,8 +19,8 @@ import org.tera.plugins.livy.settings.AppSettingsState
  * Intellij bug ticket: https://youtrack.jetbrains.com/issue/IDEA-206889?_ga=2.182916198.1332934996.1615203001-488187979.1603277938
  *
  * Registry.intValue("run.configuration.update.timeout") => initial 100 ms
- * this times out all the time and prevents the Livy action from showing so one solution is to increase it
- * Also during indexing the action will not show up.
+ * This times out all the time and prevents the Livy action from showing so one solution is to increase it but it
+ * would have to be increased quite a lot.
 */
 class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfiguration>() {
     private val configFactory = LivyConfigurationFactory()
@@ -42,27 +42,14 @@ class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfigurat
         configuration: LivyConfiguration,
         context: ConfigurationContext
     ): Boolean {
-
-        // TODO check that the context.psiElement really refers to the selected text
-        // TODO 2 the original code works everywhere, the one from the context.dataContext only in the sidebar ...
-//        val editors: Array<FileEditor> = FileEditorManager.getInstance(context.project).selectedEditors
-//        val textEditor: TextEditor = editors.get(0) as TextEditor
-//        val caretModel: CaretModel = textEditor.editor.caretModel
-//        var selectedText = caretModel.currentCaret.selectedText
-        // -> Maybe just check if user clicked somewhere inside the editor and use the original selected text method
-        // TODO or override createConfigurationFromContext and return Context subclass that overrides getConfigurationsFromContext, so non-strict can be used?
         val editor = CommonDataKeys.EDITOR.getData(context.dataContext)
-        var selectedText = editor?.caretModel?.currentCaret?.selectedText
+        val selectedText = editor?.caretModel?.currentCaret?.selectedText
         if (selectedText == null) {
-            //selectedText = ""
+            // Currently, if returning true, the Livy Config somehow takes precedence over other run configs
+            // in some places where it shouldn't, such as e.g. in the sidebar.
+            // Therefore as a workaround Livy configs are only generated when any text is selected.
             return false
         }
-        // TODO this element always seems to be the position of the cursor. So not the run icon in the sidebar.
-        //      so this way we can't check where the mouse is hovering ..
-        //val element: PsiElement? = context.psiLocation
-
-        // or use this as the getSourceElement?
-        //sourceFile = location.getPsiElement().getContainingFile();
 
         configuration.code = selectedText
         configuration.sessionId = AppSettingsState.activeSession
@@ -73,17 +60,10 @@ class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfigurat
     }
 
     override fun isConfigurationFromContext(configuration: LivyConfiguration, context: ConfigurationContext): Boolean {
-        // TODO check that the context.psiElement really refers to the selected text
-//        // TODO 2 the original code works everywhere, the one from the context.dataContext only in the sidebar ...
         val editor = CommonDataKeys.EDITOR.getData(context.dataContext)
         val selectedText = editor?.caretModel?.currentCaret?.selectedText
-//
-////        val editors: Array<FileEditor> = FileEditorManager.getInstance(context.project).getSelectedEditors()
-////        val textEditor: TextEditor = editors.get(0) as TextEditor
-////        val caretModel: CaretModel = textEditor.editor.caretModel
-////        val selectedText = caretModel.currentCaret.selectedText
+
         return selectedText != null
-      //  return (context.configuration?.configuration is LivyConfiguration) && (context.configuration?.configuration as LivyConfiguration).sessionId == configuration.sessionId
     }
 
     override fun getConfigurationFactory(): ConfigurationFactory {
@@ -106,11 +86,5 @@ class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfigurat
         }
 
         return result
-    }
-
-    private fun ultimateAncestor(element: PsiElement): PsiElement {
-        var ancestor = element
-        while (ancestor.parent != null) ancestor = ancestor.parent
-        return ancestor
     }
 }
