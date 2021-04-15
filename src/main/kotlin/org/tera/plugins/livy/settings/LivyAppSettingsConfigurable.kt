@@ -23,6 +23,7 @@ class LivyAppSettingsConfigurable: Configurable {
         val settings: AppSettingsState = AppSettingsState.instance
         var modified: Boolean = !mySettingsComponent!!.hostNameText.equals(settings.livyHost)
         modified = modified or (mySettingsComponent!!.sessionPrefix != settings.sessionPrefix)
+        modified = modified or (mySettingsComponent!!.sessionConfig != settings.sessionConfig)
         return modified
     }
 
@@ -30,12 +31,14 @@ class LivyAppSettingsConfigurable: Configurable {
         val settings: AppSettingsState = AppSettingsState.instance
         settings.livyHost = mySettingsComponent!!.hostNameText
         settings.sessionPrefix = mySettingsComponent!!.sessionPrefix
+        settings.sessionConfig = mySettingsComponent!!.sessionConfig
     }
 
     override fun reset() {
         val settings: AppSettingsState = AppSettingsState.instance
         mySettingsComponent?.hostNameText = settings.livyHost
         mySettingsComponent?.sessionPrefix = settings.sessionPrefix
+        mySettingsComponent?.sessionConfig = settings.sessionConfig
     }
 
     override fun disposeUIResources() {

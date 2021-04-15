@@ -8,6 +8,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
+import com.intellij.util.Function
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -17,6 +18,7 @@ import org.tera.plugins.livy.run.LivyConfiguration
 import org.tera.plugins.livy.run.LivyProcessHandler
 import java.security.cert.X509Certificate
 import java.time.Duration
+import java.util.stream.Collectors
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
@@ -167,4 +169,14 @@ object Utils {
             .callTimeout(Duration.ofSeconds(callTimeoutSec.toLong()))
             .hostnameVerifier { _, _ -> true }.build()
     }
+
+    val lineJoiner: com.intellij.util.Function<MutableList<String>, String> =
+        Function<MutableList<String>, String>  {
+                lines -> lines.stream().collect(Collectors.joining("\n"))
+        }
+
+    val lineParser: com.intellij.util.Function<in String, MutableList<String>> =
+        Function<String, MutableList<String>> {
+                lines -> lines.split("\n").toMutableList()
+        }
 }

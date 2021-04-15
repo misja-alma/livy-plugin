@@ -25,14 +25,7 @@ class LivyConfiguration(project: Project, factory: ConfigurationFactory, name: S
     var sessionName: String = AppSettingsState.instance.generateSessionName()
     var statementTimeout: Int = 36000
     var showRawOutput: Boolean = false
-    // TODO remove hardcoded default from git somehow. Maybe have these in a file not managed by git
-    var sessionConfig: String =
-        """{        
-"spark.kubernetes.executor.request.cores": "5",
-"spark.kubernetes.container.image": "nexus-docker.local/spark-aws:v2.4.5-20200326-20200526",
-"spark.jars.packages": "net.teralytics:home-work-assembly:21.1.3+35-273efd21",
-"spark.sql.broadcastTimeout": "1200"
-}"""
+    var sessionConfig: String = AppSettingsState.instance.sessionConfig
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
         return LivyState(environment)

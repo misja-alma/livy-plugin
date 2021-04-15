@@ -17,6 +17,13 @@ class AppSettingsState : PersistentStateComponent<AppSettingsState?> {
 
     var livyHost = "https://livy-dev.service.ckd.dns.teralytics.net"
     var sessionPrefix = "${System.getProperty("user.name")}_idea"
+    var sessionConfig =
+        """{        
+"spark.kubernetes.executor.request.cores": "5",
+"spark.kubernetes.container.image": "nexus-docker.local/spark-aws:v2.4.5-20200326-20200526",
+"spark.jars.packages": "net.teralytics:home-work-assembly:21.1.3+35-273efd21",
+"spark.sql.broadcastTimeout": "1200"
+}"""
 
     override fun getState(): AppSettingsState {
         return this

@@ -6,13 +6,13 @@ import com.intellij.openapi.ui.VerticalFlowLayout
 import com.intellij.ui.GuiUtils
 import com.intellij.ui.components.JBRadioButton
 import com.intellij.ui.components.fields.ExpandableTextField
-import com.intellij.util.Function
 import com.intellij.util.ui.UIUtil
+import org.tera.plugins.livy.Utils.lineJoiner
+import org.tera.plugins.livy.Utils.lineParser
 import org.tera.plugins.livy.settings.AppSettingsState
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.event.ActionEvent
-import java.util.stream.Collectors
 import javax.swing.JCheckBox
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -23,9 +23,6 @@ import javax.swing.JTextField
  * - host certificate (option)
  */
 class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
-    private val lineJoiner: Function<MutableList<String>, String> = Function<MutableList<String>, String>  { lines -> lines.stream().collect(Collectors.joining("\n")) }
-    private val lineParser: Function<in String, MutableList<String>> = Function<String, MutableList<String>> { lines -> lines.split("\n").toMutableList() }
-
     private val myPanel: JPanel = JPanel()
     private val hostField: LabeledComponent<JTextField> = LabeledComponent.create(
         GuiUtils.createUndoableTextField(),
@@ -162,7 +159,11 @@ class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
         configuration.code = codeField.component.text
         configuration.sessionConfig = sessionConfigField.component.text
 
-        AppSettingsState.activeSession = configuration.sessionId
+        if (newSessionRadioButton.isSelected) {
+            AppSettingsState.activeSession = null
+        } else {
+            AppSettingsState.activeSession = configuration.sessionId
+        }
         AppSettingsState.instance.livyHost = configuration.host
     }
 
