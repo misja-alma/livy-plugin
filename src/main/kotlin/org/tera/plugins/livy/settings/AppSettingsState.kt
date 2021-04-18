@@ -14,7 +14,7 @@ import com.intellij.util.xmlb.XmlSerializerUtil
  */
 @State(name = "org.tera.plugins.livy.settings.AppSettingsState", storages = [Storage("LivyPlugin.xml")])
 class AppSettingsState : PersistentStateComponent<AppSettingsState?> {
-
+    // TODO get these defaults from an optional external file. Or use Gradle template variables and a local branch?
     var livyHost = "https://livy-dev.service.ckd.dns.teralytics.net"
     var sessionPrefix = "${System.getProperty("user.name")}_idea"
     var sessionConfig =

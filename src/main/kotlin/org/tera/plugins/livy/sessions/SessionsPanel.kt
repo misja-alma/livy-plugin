@@ -107,7 +107,8 @@ class SessionsPanel() {
                         val name = jsonObject.optString("name")
                         val appId = jsonObject.optString("appId")
                         val sparkUIUrl = jsonObject.optJSONObject("appInfo")?.optString("sparkUiUrl")
-                        val log = "https://livy-dev.service.ckd.dns.teralytics.net/ui/session/$id/log"
+                        val host = AppSettingsState.instance.livyHost
+                        val log = "$host/ui/session/$id/log"
                         Session(id, name, state, appId, sparkUIUrl, log)
                     }
 
