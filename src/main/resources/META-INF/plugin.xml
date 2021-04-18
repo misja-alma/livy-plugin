@@ -1,19 +1,19 @@
 <idea-plugin>
-    <id>org.jetbrains.plugins.template</id>
-    <name>Template</name>
-    <vendor>JetBrains</vendor>
+    <id>org.tera.plugins.Livy</id>
+    <name>Livy</name>
+    <vendor>Teralytics</vendor>
 
     <!-- Product and plugin compatibility requirements -->
     <!-- https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <applicationService serviceImplementation="org.jetbrains.plugins.template.services.MyApplicationService"/>
-        <projectService serviceImplementation="org.jetbrains.plugins.template.services.MyProjectService"/>
+        <configurationType implementation="org.tera.plugins.livy.run.LivyConfigurationType"/>
+        <runConfigurationProducer implementation="org.tera.plugins.livy.run.LivyRunConfigurationProducer"/>
+        <toolWindow id="Livy Sessions" secondary="true" icon="AllIcons.Actions.ArrowExpand" anchor="bottom"
+                    factoryClass="org.tera.plugins.livy.sessions.SessionsPanelFactory"/>
+        <applicationConfigurable parentId="tools" instance="org.tera.plugins.livy.settings.LivyAppSettingsConfigurable"
+                             id="org.tera.plugin.Livy.LivyAppSettingsConfigurable" displayName="Livy Settings"/>
+        <applicationService serviceImplementation="org.tera.plugins.livy.settings.AppSettingsState"/>
     </extensions>
-
-    <applicationListeners>
-        <listener class="org.jetbrains.plugins.template.listeners.MyProjectManagerListener"
-                  topic="com.intellij.openapi.project.ProjectManagerListener"/>
-    </applicationListeners>
 </idea-plugin>

@@ -31,7 +31,7 @@ val platformPlugins: String by project
 val platformDownloadSources: String by project
 
 group = pluginGroup
-version = pluginVersion
+version = pluginVersion + "_PC"
 
 // Configure project's dependencies
 repositories {
@@ -47,9 +47,8 @@ dependencies {
 // Read more: https://github.com/JetBrains/gradle-intellij-plugin
 intellij {
     pluginName = pluginName_
-    version = platformVersion
-    type = platformType
-    downloadSources = platformDownloadSources.toBoolean()
+    type = "PY"
+    downloadSources = false
     updateSinceUntilBuild = true
 
     // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file.
@@ -75,7 +74,7 @@ tasks {
         // Extract the <!-- Plugin description --> section from README.md and provide for the plugin's manifest
         pluginDescription(
             closure {
-                File("$projectDir/README.md").readText().lines().run {
+                File("./README.md").readText().lines().run {
                     val start = "<!-- Plugin description -->"
                     val end = "<!-- Plugin description end -->"
 
