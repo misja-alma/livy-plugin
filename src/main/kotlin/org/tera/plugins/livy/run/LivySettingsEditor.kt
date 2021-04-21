@@ -112,7 +112,7 @@ class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
         myPanel.add(codeField)
 
         newSessionRadioButton.addActionListener { e: ActionEvent ->
-            sessionIdField.text = ""
+            sessionIdField.component.text = ""
             enableOptions(newSessionRadioButton)
         }
         existingSessionRadioButton.addActionListener { e: ActionEvent -> enableOptions(existingSessionRadioButton) }
