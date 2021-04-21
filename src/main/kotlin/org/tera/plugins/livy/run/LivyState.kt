@@ -24,7 +24,6 @@ class LivyState(environment: ExecutionEnvironment): RunProfileState {
 
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult {
         val console = myConsoleBuilder.getConsole()
-        // TODO in the process handler, start the command on startNotify?
         val runConfig = myEnvironment.runProfile as LivyConfiguration
         val handler = LivyProcessHandler(myEnvironment.project, runConfig)
         console.attachToProcess(handler)

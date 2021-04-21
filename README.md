@@ -9,6 +9,8 @@ with their properties.
 ### Table of contents
 
 - [Getting started](#getting-started)
+- [Viewing/ managing Livy sessions](#viewing-managing-livy-sessions)
+- [Editing settings](#editing-settings)
 - [Troubleshooting](#troubleshooting)
 
 
@@ -23,12 +25,22 @@ When you want to change any of the Livy properties, right-click and choose 'Modi
 Alternatively, Livy run configurations can be created and edited in IntelliJ's Run Configuration Dialog.
 
 Once you have created a Livy Session, the plugin will automatically select that session for any new code you want to 
-execute. If this is not what you want, you can open the run configuration and clear the session id; this way the plugin 
-will create a new session next time. Or you can enter any other session id of your choice.
+execute. If this is not what you want, you can open the run configuration and choose 'Create New Session'; 
+this way the plugin will create a new session next time. 
 
-To view all Livy's running sessions, go to 'View'/'Tool Windows' and choose 'Livy Sessions'. 
-Livy sessions will be shown when 'Refresh' is clicked. After selecting a session it is possible to delete it, but make 
-sure that that session is yours!
+## Viewing/ managing Livy sessions
+
+To view all Livy's running sessions, go to 'View'/'Tool Windows' and choose 'Livy Sessions'.Livy sessions will be shown 
+when 'Refresh' is clicked. After selecting a session it is possible to delete it, but make sure that that session is 
+yours! The sessions that are shown are the ones that are running on the Livy server that you configured in your most 
+recent Livy run configuration.
+
+## Editing settings
+
+For a new run configuration, the Livy plugin will copy the settings from your last configuration, such as the host to 
+connect to and all Spark configuration. You can edit the run configuration to adjust any settings.There is also a 
+Livy Settings menu under Preferences-Tools-Livy Settings that lets you edit a few defaults such as the auto-generated 
+prefix for the session name.
 
 ## Troubleshooting
 

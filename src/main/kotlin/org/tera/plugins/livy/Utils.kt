@@ -143,7 +143,6 @@ object Utils {
             notificationType
         )
         Notifications.Bus.notify(notification)
-//        notification.getBalloon()?.hide() // TODO this doesn't work
     }
 
     fun getUnsafeOkHttpClient(callTimeoutSec: Int): OkHttpClient {
@@ -170,12 +169,12 @@ object Utils {
             .hostnameVerifier { _, _ -> true }.build()
     }
 
-    val lineJoiner: com.intellij.util.Function<MutableList<String>, String> =
+    val lineJoiner: Function<MutableList<String>, String> =
         Function<MutableList<String>, String>  {
                 lines -> lines.stream().collect(Collectors.joining("\n"))
         }
 
-    val lineParser: com.intellij.util.Function<in String, MutableList<String>> =
+    val lineParser: Function<in String, MutableList<String>> =
         Function<String, MutableList<String>> {
                 lines -> lines.split("\n").toMutableList()
         }
