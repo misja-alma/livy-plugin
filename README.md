@@ -21,6 +21,8 @@ and choose 'Run New Livy Session'. This will start a new Livy session and immedi
 code for execution. The output from Livy will be shown in the output console as soon as the execution has finished.
 Unfortunately Livy does not support streaming Spark output as it would be supported by a Spark shell.
 
+![dropdown.png](dropdown.png)
+
 When you want to change any of the Livy properties, right-click and choose 'Modify Run Configuration'.
 Alternatively, Livy run configurations can be created and edited in IntelliJ's Run Configuration Dialog.
 
