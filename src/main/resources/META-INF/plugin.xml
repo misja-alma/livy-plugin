@@ -1,10 +1,43 @@
 <idea-plugin>
     <id>org.tera.plugins.Livy</id>
     <name>Livy</name>
-    <vendor>Teralytics</vendor>
+    <description><![CDATA[
+        The Livy Plugin enables executing code on a Livy server straight from IntelliJ and can show currently running Livy sessions
+        with their properties.
 
-    <!-- Product and plugin compatibility requirements -->
-    <!-- https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+        <h1>Execute code remotely on Livy</h1>
+
+        <p>After installing the Livy plugin, select the code in your editor that you want to execute on Livy. Then right-click
+        and choose 'Run New Livy Session'. This will start a new Livy session and immediately afterwards send your selected
+        code for execution. The output from Livy will be shown in the output console as soon as the execution has finished.
+        Unfortunately Livy does not support streaming Spark output as it would be supported by a Spark shell.
+
+        When you want to change any of the Livy properties, right-click and choose 'Modify Run Configuration'.
+        Alternatively, Livy run configurations can be created and edited in IntelliJ's Run Configuration Dialog.
+
+        Once you have created a Livy Session, the plugin will automatically select that session for any new code you want to
+        execute. If this is not what you want, you can open the run configuration and choose 'Create New Session';
+        this way the plugin will create a new session next time.</p>
+
+        <h1>View and Manage Livy sessions</h1>
+
+        <p>To view all Livy's running sessions, go to 'View'/'Tool Windows' and choose 'Livy Sessions'.Livy sessions will be shown
+        when 'Refresh' is clicked. After selecting a session it is possible to delete it, but make sure that that session is
+        yours! The sessions that are shown are the ones that are running on the Livy server that you configured in your most
+        recent Livy run configuration.</p>
+
+        <h1>Editing settings</h1>
+
+        <p>For a new run configuration, the Livy plugin will copy the settings from your last configuration, such as the host to
+        connect to and all Spark configuration. You can edit the run configuration to adjust any settings.There is also a
+        Livy Settings menu under Preferences-Tools-Livy Settings that lets you edit a few defaults such as the auto-generated
+        prefix for the session name.</p>
+        ]]>
+    </description>
+    <version>0.3.2</version>
+    <change-notes>Initial release of the plugin.</change-notes>
+    <vendor>Misja Alma</vendor>
+
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
