@@ -148,7 +148,11 @@ class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
     override fun applyEditorTo(configuration: LivyConfiguration) {
         configuration.host = hostField.component.text
         configuration.sessionId = idToInt(sessionIdField.component.text)
-        configuration.sessionName = sessionNameField.component.text
+        if (configuration.sessionName != sessionNameField.component.text) {
+            configuration.sessionName = sessionNameField.component.text
+            configuration.name = configuration.sessionName
+            configuration.setNameChangedByUser(true)
+        }
         configuration.kind = kindField.component.text
         configuration.driverMemory = driverMemoryField.component.text
         configuration.executorMemory = executorMemoryField.component.text
@@ -159,11 +163,6 @@ class LivySettingsEditor: SettingsEditor<LivyConfiguration>() {
         configuration.code = codeField.component.text
         configuration.sessionConfig = sessionConfigField.component.text
 
-        if (newSessionRadioButton.isSelected) {
-            AppSettingsState.activeSession = null
-        } else {
-            AppSettingsState.activeSession = configuration.sessionId
-        }
         AppSettingsState.instance.livyHost = configuration.host
     }
 

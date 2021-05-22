@@ -5,19 +5,25 @@
         The Livy Plugin enables executing code on a Livy server straight from IntelliJ and can show currently running Livy sessions
         with their properties.
 
-        <h1>Execute code remotely on Livy</h1>
+        <h1> Getting started</h1>
 
-        <p>After installing the Livy plugin, select the code in your editor that you want to execute on Livy. Then right-click
-        and choose 'Run New Livy Session'. This will start a new Livy session and immediately afterwards send your selected
-        code for execution. The output from Livy will be shown in the output console as soon as the execution has finished.
-        Unfortunately Livy does not support streaming Spark output as it would be supported by a Spark shell.
+        <p>After installing the Livy plugin, it's a good idea to enter the default settings of your Livy server.
+        Under preferences -> Livy Settings you can enter the host address, default Livy configuration json and a default
+        session name prefix.</p>
+
+        <h1>Running code on a Livy server</h1>
+
+        <p>Select the code in your editor that you want to execute. Then right-click and choose 'Run New Livy Session'.
+        This will start a new Livy session using the default Livy settings and immediately send your selected
+        code for execution. The output from Livy will be shown in the output console.
+        Unfortunately Livy does not support streaming Spark output as it would be supported by a Spark shell, so any
+        output of your job will be shown at then end, when your job has completed.
 
         When you want to change any of the Livy properties, right-click and choose 'Modify Run Configuration'.
         Alternatively, Livy run configurations can be created and edited in IntelliJ's Run Configuration Dialog.
 
-        Once you have created a Livy Session, the plugin will automatically select that session for any new code you want to
-        execute. If this is not what you want, you can open the run configuration and choose 'Create New Session';
-        this way the plugin will create a new session next time.</p>
+        Once you have created a Livy Session, the plugin will automatically show that last session in the context menu for
+        any new code you want to execute, so you can choose to execute new code in the same session.</p>
 
         <h1>View and Manage Livy sessions</h1>
 
@@ -34,7 +40,7 @@
         prefix for the session name.</p>
         ]]>
     </description>
-    <version>0.3.2</version>
+    <version>0.0.4</version>
     <change-notes>Initial release of the plugin.</change-notes>
     <vendor>Misja Alma</vendor>
 
@@ -49,4 +55,13 @@
                              id="org.tera.plugin.Livy.LivyAppSettingsConfigurable" displayName="Livy Settings"/>
         <applicationService serviceImplementation="org.tera.plugins.livy.settings.AppSettingsState"/>
     </extensions>
+
+    <actions>
+        <!-- See AllIcons.class for more icons -->
+        <action id="org.tera.plugins.livy.run.new" class="org.tera.plugins.livy.run.NewLivySession" text="Run New Livy Session"
+                description="Run New Livy Session" icon="/runConfigurations/testState/run.svg">
+            <add-to-group group-id="EditorPopupMenu.Run" anchor="first"/>
+        </action>
+    </actions>
+
 </idea-plugin>

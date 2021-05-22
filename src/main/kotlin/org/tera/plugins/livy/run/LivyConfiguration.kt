@@ -12,10 +12,10 @@ import org.tera.plugins.livy.settings.AppSettingsState
 
 class LivyConfiguration(project: Project, factory: ConfigurationFactory, name: String?) : LocatableConfigurationBase<LivyOptions>(project, factory, name) {
     companion object {
-        val defaultName = "New Livy Session"
+        const val defaultName = "New Livy Session"
     }
     var host: String = AppSettingsState.instance.livyHost
-    var sessionId: Int? = AppSettingsState.activeSession
+    var sessionId: Int? = null
     var code: String = ""
     var kind: String = "spark"
     var driverMemory: String = "20G"
@@ -26,6 +26,11 @@ class LivyConfiguration(project: Project, factory: ConfigurationFactory, name: S
     var statementTimeout: Int = 36000
     var showRawOutput: Boolean = false
     var sessionConfig: String = AppSettingsState.instance.sessionConfig
+
+    init {
+        isAllowRunningInParallel = true
+        setGeneratedName()
+    }
 
     override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
         return LivyState(environment)
@@ -40,11 +45,11 @@ class LivyConfiguration(project: Project, factory: ConfigurationFactory, name: S
     }
 
     override fun suggestedName(): String {
-        return if (sessionId == null) defaultName else "Livy Session $sessionId"
+        return sessionName
     }
 
     override fun readExternal(element: Element) {
-        super<LocatableConfigurationBase>.readExternal(element)
+        super.readExternal(element)
 
         element.getAttributeValue("host")?.let { host = it }
         element.getAttributeValue("sessionId")?.let { sessionId = it.toInt() }
@@ -54,7 +59,10 @@ class LivyConfiguration(project: Project, factory: ConfigurationFactory, name: S
         element.getAttributeValue("executorMemory")?.let { executorMemory = it }
         element.getAttributeValue("executorCores")?.let { executorCores = it.toInt() }
         element.getAttributeValue("numExecutors")?.let { numExecutors = it.toInt() }
-        element.getAttributeValue("sessionName")?.let { sessionName = it }
+        element.getAttributeValue("sessionName")?.let {
+            sessionName = it
+            name = it
+        }
         element.getAttributeValue("statementTimeout")?.let { statementTimeout = it.toInt() }
         element.getAttributeValue("showRawOutput")?.let { showRawOutput = it.toBoolean() }
         element.getAttributeValue("sessionConfig")?.let { sessionConfig = it }
@@ -74,14 +82,19 @@ class LivyConfiguration(project: Project, factory: ConfigurationFactory, name: S
         element.setAttribute("showRawOutput", showRawOutput.toString())
         element.setAttribute("sessionConfig", sessionConfig)
 
-        super<LocatableConfigurationBase>.writeExternal(element)
+        super.writeExternal(element)
     }
 
+
+    // TODO this is called when the run config editor is opened in the top bar or in the drop down with 'edit'. But this is not correct,
+    // we're not editing the same config this way?!
     override fun clone(): RunConfiguration {
-        val result = super.clone() as LivyConfiguration
-        // Make sure new sessions get a unique session name
-        if (result.sessionId == null) result.sessionName = AppSettingsState.instance.generateSessionName()
-        return result
+        return this
+    }
+
+    // Note that setGeneratedName has to be called to let this have effect
+    override fun getActionName(): String? {
+        if (sessionId == null) return defaultName else return super.getActionName()
     }
 }
 

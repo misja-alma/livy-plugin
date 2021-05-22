@@ -13,17 +13,16 @@ import com.intellij.psi.search.GlobalSearchScopes
 class LivyState(environment: ExecutionEnvironment): RunProfileState {
 
     private var myConsoleBuilder: TextConsoleBuilder
-    private var myEnvironment: ExecutionEnvironment
+    private var myEnvironment: ExecutionEnvironment = environment
 
     init {
-        myEnvironment = environment
-        val project = environment.getProject()
+        val project = environment.project
         val searchScope = GlobalSearchScopes.executionScope(project, environment.runProfile)
         myConsoleBuilder = TextConsoleBuilderFactory.getInstance().createBuilder(project, searchScope)
     }
 
     override fun execute(executor: Executor?, runner: ProgramRunner<*>): ExecutionResult {
-        val console = myConsoleBuilder.getConsole()
+        val console = myConsoleBuilder.console
         val runConfig = myEnvironment.runProfile as LivyConfiguration
         val handler = LivyProcessHandler(myEnvironment.project, runConfig)
         console.attachToProcess(handler)

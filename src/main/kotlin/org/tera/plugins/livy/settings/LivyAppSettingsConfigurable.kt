@@ -3,6 +3,9 @@ package org.tera.plugins.livy.settings
 import com.intellij.openapi.options.Configurable;
 import javax.swing.JComponent
 
+/**
+ * Manages the persistent settings of the Livy plugin
+ */
 class LivyAppSettingsConfigurable: Configurable {
     private var mySettingsComponent: AppSettingsComponent? = null
 

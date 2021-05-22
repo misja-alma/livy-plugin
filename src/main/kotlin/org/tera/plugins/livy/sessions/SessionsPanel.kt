@@ -68,7 +68,7 @@ class SessionsPanel() {
             selectedSessions.forEach { deleteThis ->
                 deleteThis.run {
                     Utils.deleteSession(client, AppSettingsState.instance.livyHost, deleteThis)
-                    if (AppSettingsState.activeSession == this) AppSettingsState.activeSession = null
+                    //if (AppSettingsState.activeSession == this) AppSettingsState.activeSession = null
                 }
             }
         }

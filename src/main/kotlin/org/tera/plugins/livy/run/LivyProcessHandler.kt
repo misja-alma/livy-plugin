@@ -38,13 +38,17 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
     }
 
     fun startLivySession(client: OkHttpClient, config: LivyConfiguration): Int? {
-        return Utils.startLivySession (
+        val result = Utils.startLivySession (
             client,
             config,
             myProject,
             { isCanceled },
             { text: String, type: ConsoleViewContentType -> logText(text, type) }
         )
+        if (result != null) {
+            AppSettingsState.activeSession = result
+        }
+        return result
     }
 
     private fun post(client: OkHttpClient, url: String, postBody: String): Response {
@@ -75,23 +79,25 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
 
                     if (sessionId != null) {
                         if (config.name == LivyConfiguration.defaultName) {
-                            val runManager = RunManagerImpl.getInstanceImpl(project)
-                            val oldRunConfig: RunnerAndConfigurationSettings? = runManager.findConfigurationByName(LivyConfiguration.defaultName)
-                            if (oldRunConfig != null) {
-                                runManager.removeConfiguration(oldRunConfig)
-                            }
+//                            val runManager = RunManagerImpl.getInstanceImpl(project)
+//                            val oldRunConfig: RunnerAndConfigurationSettings? = runManager.findConfigurationByName(LivyConfiguration.defaultName)
+//                            if (oldRunConfig != null) {
+//                                runManager.removeConfiguration(oldRunConfig)
+//                            }
 
-                            config.name = "Livy Session $sessionId"
+                            // TODO! Maybe use the session name as the run config name!
+                                //  This way we can have a name from the start which we don't have to change!
+                            //config.name = "Livy Session $sessionId"
+
+                            //updateRunConfiguration(project, LivyConfiguration.defaultName)
                         }
-                        AppSettingsState.activeSession = sessionId
+                        //AppSettingsState.activeSession = null //sessionId
                         config.sessionId = sessionId
                     } else {
                         logText("Could not start new Livy session", ConsoleViewContentType.LOG_ERROR_OUTPUT)
                         notifyProcessTerminated(1)
                         return
                     }
-
-                    updateRunConfiguration(project, config)
                 } else {
                     // TODO we could still check here that the old session is not dead
                     logText("Using existing session $sessionId\n", ConsoleViewContentType.LOG_INFO_OUTPUT)
@@ -110,15 +116,17 @@ class LivyProcessHandler(project: Project, config: LivyConfiguration) : ProcessH
 
     private fun updateRunConfiguration(
         project: Project,
-        newConfig: RunConfiguration,
+        oldName: String,
     ) {
         val runManager = RunManagerImpl.getInstanceImpl(project)
-        val newRunConfig = RunnerAndConfigurationSettingsImpl(runManager, newConfig)
-        runManager.addConfiguration(newRunConfig)
-        runManager.fireRunConfigurationChanged(newRunConfig)
+        val conf = runManager.findConfigurationByName(oldName)
+//        val newRunConfig = RunnerAndConfigurationSettingsImpl(runManager, newConfig)
+//        runManager.addConfiguration(newRunConfig)
+        if (conf != null) {
+            runManager.fireRunConfigurationChanged(conf)
+        }
         // TODO this sometimes takes effect really late or not at all ..
-        // This is probably because the below method should be called when there is really a new runconfig!
-        // In our case the run config is the same, and this is checked in the Idea UI
+        // It seems it needs some kick to update the UI first like moving the mouse
     }
 
     private fun executeStatement(

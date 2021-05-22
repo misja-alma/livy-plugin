@@ -5,8 +5,11 @@ import com.intellij.execution.actions.ConfigurationContext
 import com.intellij.execution.actions.ConfigurationFromContext
 import com.intellij.execution.actions.LazyRunConfigurationProducer
 import com.intellij.execution.configurations.ConfigurationFactory
+import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.Ref
+import com.intellij.openapi.util.UserDataHolder
 import com.intellij.psi.PsiElement
 import org.tera.plugins.livy.settings.AppSettingsState
 
@@ -21,6 +24,9 @@ import org.tera.plugins.livy.settings.AppSettingsState
  * Registry.intValue("run.configuration.update.timeout") => initial 100 ms
  * This times out all the time and prevents the Livy action from showing so one solution is to increase it but it
  * would have to be increased quite a lot.
+ *
+ * TODO we might want to use the flag `isEditBeforeRun` in RunnerAndConfigurationSettings, to show the config editor
+ *      before running?
 */
 class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfiguration>() {
     private val configFactory = LivyConfigurationFactory()
@@ -52,9 +58,10 @@ class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfigurat
         }
 
         configuration.code = selectedText
-        configuration.sessionId = AppSettingsState.activeSession
-        configuration.name = configuration.suggestedName()
-        configuration.host = AppSettingsState.instance.livyHost
+//        configuration.sessionId = null
+//        configuration.sessionName = AppSettingsState.instance.generateSessionName()
+//        configuration.name = configuration.suggestedName()
+//        configuration.host = AppSettingsState.instance.livyHost
 
         return true
     }
@@ -79,6 +86,12 @@ class LivyRunConfigurationProducer : LazyRunConfigurationProducer<LivyConfigurat
         return self.configuration !is LivyConfiguration
     }
 
+    // This method is called when the context menu is populated. It depends on isConfigurationFromContext, if any
+    // existing config is found that returns true there, this is used for the action backing the 'new Livy session' option.
+    // Just using the same config would end up with the existing one having its session name changed and other weird stuff.
+    // using same config would work if it weren't possible to create a new session in the run config edit dialog.
+    // However if that's not possible then it's not easy to create a new session in the Idea UI.
+    // An extra drop down action was added as a workaround, see newLivySession
     override fun findExistingConfiguration(context: ConfigurationContext): RunnerAndConfigurationSettings? {
         val result = super.findExistingConfiguration(context)
         if (result != null && result.configuration is LivyConfiguration) {
