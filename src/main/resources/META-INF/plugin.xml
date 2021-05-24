@@ -2,10 +2,15 @@
     <id>org.tera.plugins.Livy</id>
     <name>Livy</name>
     <description><![CDATA[
-        The Livy Plugin enables executing code on a Livy server straight from IntelliJ and can show currently running Livy sessions
-        with their properties.
+        Enables executing code on a Livy server directly from IntelliJ.
+        Features:
+        <ul>
+            <li>Select code in your editor and execute it on your Livy server, either in a new session or by reusing an existing one</li>
+            <li>Displays the output of your Livy job in the terminal window</li>
+            <li>Show and manage currently running Livy sessions</li>
+        </ul>
 
-        <h1> Getting started</h1>
+        <h1>Usage Instructions</h1>
 
         <p>After installing the Livy plugin, it's a good idea to enter the default settings of your Livy server.
         Under preferences -> Livy Settings you can enter the host address, default Livy configuration json and a default
