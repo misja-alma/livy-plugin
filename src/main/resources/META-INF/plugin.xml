@@ -45,7 +45,7 @@
         prefix for the session name.</p>
         ]]>
     </description>
-    <version>0.0.4</version>
+    <version>0.0.5</version>
     <change-notes>Initial release of the plugin.</change-notes>
     <vendor>Misja Alma</vendor>
 
