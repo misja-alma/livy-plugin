@@ -2,8 +2,10 @@
     <id>org.tera.plugins.Livy</id>
     <name>Livy</name>
     <description><![CDATA[
-        Enables executing code on a Livy server directly from IntelliJ.
-        Features:
+        Enables executing code on an Apache Livy server directly from IntelliJ.
+        <a href="https://livy.apache.org/">Apache Livy</a> is a REST service that enables remote execution of Spark jobs.
+
+        Features of the Livy Plugin:
         <ul>
             <li>Select code in your editor and execute it on your Livy server, either in a new session or by reusing an existing one</li>
             <li>Displays the output of your Livy job in the terminal window</li>
@@ -17,6 +19,8 @@
         session name prefix.</p>
 
         <h1>Running code on a Livy server</h1>
+
+        <img src="dropdown.png"/>
 
         <p>Select the code in your editor that you want to execute. Then right-click and choose 'Run New Livy Session'.
         This will start a new Livy session using the default Livy settings and immediately send your selected
@@ -32,6 +36,8 @@
 
         <h1>View and Manage Livy sessions</h1>
 
+        <img src="sessions.png"/>
+
         <p>To view all Livy's running sessions, go to 'View'/'Tool Windows' and choose 'Livy Sessions'.Livy sessions will be shown
         when 'Refresh' is clicked. After selecting a session it is possible to delete it, but make sure that that session is
         yours! The sessions that are shown are the ones that are running on the Livy server that you configured in your most
@@ -45,7 +51,7 @@
         prefix for the session name.</p>
         ]]>
     </description>
-    <version>0.0.5</version>
+    <version>0.0.51</version>
     <change-notes>Initial release of the plugin.</change-notes>
     <vendor>Misja Alma</vendor>
 
